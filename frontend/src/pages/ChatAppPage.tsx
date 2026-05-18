@@ -1,7 +1,13 @@
-import React from "react";
+import Logout from "@/components/auth/Logout";
+import { useAuthStore } from "@/stores/useAuthStore";
 const ChatAppPage=()=>{
+    const user=useAuthStore((s)=>s.user);
+    console.log("check chatapp", user);
     return (
-        <>ChatApp page</>
+      <div>
+        {user?.displayName}
+        <Logout></Logout>
+      </div>
     )
 }
 export default ChatAppPage;

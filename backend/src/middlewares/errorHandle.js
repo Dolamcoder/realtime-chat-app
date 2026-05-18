@@ -4,7 +4,6 @@ export const errorHandler = (err, req, res, next) => {
     statusCode: err.statusCode,
     message: err.message || "Lỗi từ server", // Nếu lỗi mà không có message thì lấy ReasonPhrases chuẩn theo mã Status Code
   };
-  console.log(responseError);
   console.error(err.stack);
   res.status(err.statusCode).json(responseError);
 };

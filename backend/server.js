@@ -4,10 +4,12 @@ import cookieParser from 'cookie-parser'
 import {connectDB} from './src/config/db.js'
 import { errorHandler } from './src/middlewares/errorHandle.js'
 import router from "./src/routes/v1/index.js"
+import cors from "cors"
 dotenv.config()
 const app=express();
-app.use(express.json())
-app.use(cookieParser())
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({origin:process.env.CLIENT_URL, credentials: true}));
 app.use("/api/v1", router)
 app.get("/", (req, res) => {
     res.json("hello world")

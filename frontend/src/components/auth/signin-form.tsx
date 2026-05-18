@@ -6,6 +6,8 @@ import { Label } from "../ui/label";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useNavigate } from "react-router";
 const signInSchema = z.object({
   username: z.string().min(6, "Tên đăng nhập có ít nhất 6 kí tự"),
   password: z.string().min(8, "Mật khẩu phải có ít nhất 8 kí tự"),
@@ -15,6 +17,8 @@ export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { signIn } = useAuthStore();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -23,7 +27,11 @@ export function SigninForm({
     resolver: zodResolver(signInSchema),
   });
   const onSubmit = async (data: SignInFormValues) => {
-    // call api be
+    try {
+      const { username, password } = data;
+      await signIn(username, password);
+      navigate("/")
+    } catch (err) {}
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -52,11 +60,11 @@ export function SigninForm({
                   placeholder="dolampoker"
                   {...register("username")}
                 />
-                 {errors.username && (
-                    <p className="text-destructive text-sm">
-                      {errors.username.message}
-                    </p>
-                  )}
+                {errors.username && (
+                  <p className="text-destructive text-sm">
+                    {errors.username.message}
+                  </p>
+                )}
               </div>
               {/* password */}
               <div className="flex flex-col gap-3">
@@ -69,15 +77,15 @@ export function SigninForm({
                   placeholder="Lam1234@2006"
                   {...register("password")}
                 />
-                 {errors.password && (
-                    <p className="text-destructive text-sm">
-                      {errors.password.message}
-                    </p>
-                  )}
+                {errors.password && (
+                  <p className="text-destructive text-sm">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               {/* Button đăng ký */}
-              <Button type="submit" className="w-full">
-                Tạo tài khoản
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
               <div className="text-center text-sm">
                 Bạn chưa có tài khoản?{" "}

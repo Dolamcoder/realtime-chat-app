@@ -1,10 +1,10 @@
-import { asyncHandler } from "../utils/asyncHandle";
+import { asyncHandler } from "../utils/asyncHandle.js";
 import jwt from "jsonwebtoken";
-import { getUserById } from "../services/userService";
-export const protectedRoute=asyncHandler(async(req, res, next)=>{
+import { getUserById } from "../services/userService.js";
+export const authMiddleware=asyncHandler(async(req, res, next)=>{
     try{
-        const authHeader=req.header["authorization"];
-        const token=authHeader && authHeader.split("")[1];
+        const authHeader=req.headers["authorization"];
+        const token=authHeader && authHeader.split(" ")[1];
         if(!token) return res.status(401).json({message: "Không tìm thấy token"});
         jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,async(err, decodedUser)=>{
         if(err){

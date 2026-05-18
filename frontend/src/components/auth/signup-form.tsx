@@ -6,6 +6,8 @@ import { Label } from "../ui/label";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useNavigate } from "react-router";
 const signUpSchema = z.object({
   firstname: z.string().min(1, "Tên không được để trống"),
   lastname: z.string().min(1, "Họ không được để trống"),
@@ -18,6 +20,8 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { signUp } = useAuthStore();
+  const navigate=useNavigate();
   const {
     register,
     handleSubmit,
@@ -26,7 +30,12 @@ export function SignupForm({
     resolver: zodResolver(signUpSchema),
   });
   const onSubmit = async (data: SignUpFormValues) => {
-    // call api be
+    try {
+      const { firstname, lastname, username, email, password } = data;
+      await signUp(username, password, email, firstname, lastname);
+      navigate("/signin");
+    } catch (error) {
+    }
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -90,11 +99,11 @@ export function SignupForm({
                   placeholder="dolampoker"
                   {...register("username")}
                 />
-                 {errors.username && (
-                    <p className="text-destructive text-sm">
-                      {errors.username.message}
-                    </p>
-                  )}
+                {errors.username && (
+                  <p className="text-destructive text-sm">
+                    {errors.username.message}
+                  </p>
+                )}
               </div>
               {/* email */}
               <div className="flex flex-col gap-3">
@@ -107,11 +116,11 @@ export function SignupForm({
                   placeholder="dolam261106@gmail.com"
                   {...register("email")}
                 />
-                 {errors.email && (
-                    <p className="text-destructive text-sm">
-                      {errors.email.message}
-                    </p>
-                  )}
+                {errors.email && (
+                  <p className="text-destructive text-sm">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               {/* password */}
               <div className="flex flex-col gap-3">
@@ -124,15 +133,15 @@ export function SignupForm({
                   placeholder="Lam1234@2006"
                   {...register("password")}
                 />
-                 {errors.password && (
-                    <p className="text-destructive text-sm">
-                      {errors.password.message}
-                    </p>
-                  )}
+                {errors.password && (
+                  <p className="text-destructive text-sm">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               {/* Button đăng ký */}
-              <Button type="submit" className="w-full">
-                Tạo tài khoản
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
               </Button>
               <div className="text-center text-sm">
                 Bạn đã có tài khoản?{" "}

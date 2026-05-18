@@ -1,15 +1,16 @@
 import {checkUsername, checkEmail, hashPassword, checkPassword, createAccessToken} from '../services/authService.js';
 import {createUser, getUserByUsername} from '../services/userService.js'
 import { asyncHandler } from '../utils/asyncHandle.js';
-import { saveRefreshToken, createRefreshToken, deleteRefreshToken} from '../services/sessionService.js';
+import { saveRefreshToken, createRefreshToken, verifyRefreshToken} from '../services/sessionService.js';
 
 export const register = asyncHandler(async (req, res) => {
-  const { username, email, password, firstName, lastName } = req.body;
+  const { username, email, password, firstname, lastname } = req.body;
+  console.log("checkk data client",  username, email, password, firstname, lastname )
   await checkEmail(email);
   await checkUsername(username);
   const hashedPassword = await hashPassword(password);
-  await createUser({username, email, hashedPassword, displayName: `${firstName} ${lastName}` })
-  res.status(201).json({
+  await createUser({username, email, hashedPassword, displayName: `${firstname} ${lastname}` })
+  return res.status(201).json({
     message: "Đăng ký thành công",
   });
 });
@@ -28,16 +29,9 @@ export const login = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   
-  res.status(200).json({
+  return res.status(200).json({
     message: "Đăng nhập thành công",
     accessToken,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      displayName: user.displayName,
-      avatarUrl: user.avatarUrl,
-    }
   });
 });
 export const logOut=asyncHandler(async(req, res)=>{
@@ -46,5 +40,12 @@ export const logOut=asyncHandler(async(req, res)=>{
     await deleteRefreshToken(token);
     res.clearCookie("refreshToken");
   } 
-  res.sendStatus(204);
+  return res.sendStatus(204);
+})
+export const refreshToken=asyncHandler(async(req, res)=>{
+  const token=req.cookies?.refreshToken;
+  console.log("check cookie", token);
+  const userId= await verifyRefreshToken(token);
+  const accessToken = createAccessToken(userId);
+  res.status(200).json({accessToken})
 })
