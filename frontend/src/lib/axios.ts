@@ -1,61 +1,96 @@
-import { useAuthStore } from "@/stores/useAuthStore";
 import axios from "axios";
+import { useAuthStore } from "@/stores/useAuthStore";
+
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BACKEND_URL,
   withCredentials: true,
 });
+
+// REQUEST INTERCEPTOR
+instance.interceptors.request.use(
+  (config) => {
+    const { accessToken } = useAuthStore.getState();
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// RESPONSE INTERCEPTOR
 instance.interceptors.response.use(
-  function (response) {
-    if (response.data && response.data.data) return response.data;
+  (response) => {
+    // giữ nguyên response để service dùng .data
     return response;
   },
-  function (error) {
-    if (error.response && error.response.data)
-      return Promise.reject(error.response.data);
-    return Promise.reject(error);
-  },
-);
-instance.interceptors.request.use((config) => {
-  const { accessToken } = useAuthStore.getState();
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
-instance.interceptors.response.use(
-  (res) => res,
+
   async (error) => {
     const originalRequest = error.config;
-    if (
-      originalRequest.url.includes("/auth/signin") ||
-      originalRequest.url.includes("/auth/signup") ||
-      originalRequest.url.includes("/auth/refresh")
-    ) {
+
+    // Không có config
+    if (!originalRequest) {
       return Promise.reject(error);
     }
 
-    originalRequest._retryCount = originalRequest._retryCount || 0;
+    const url = originalRequest.url || "";
 
-    if (error.response?.status === 403 && originalRequest._retryCount < 4) {
-      originalRequest._retryCount += 1;
+    // Không refresh cho auth APIs
+    if (
+      url.includes("/auth/login") ||
+      url.includes("/auth/register") ||
+      url.includes("/auth/refresh")
+    ) {
+      return Promise.reject(
+        error.response?.data || error
+      );
+    }
+
+    // Tránh loop vô hạn
+    if (originalRequest._retry) {
+      return Promise.reject(
+        error.response?.data || error
+      );
+    }
+
+    // Access token hết hạn
+    if (error.response?.status === 403) {
+      originalRequest._retry = true;
 
       try {
-        const res = await instance.post("/auth/refresh", {
-          withCredentials: true,
-        });
-        const newAccessToken = res.data.accessToken;
+        const res = await instance.post(
+          "/auth/refresh"
+        );
 
-        useAuthStore.getState().setAccessToken(newAccessToken);
+        const newAccessToken =
+          res.data.accessToken;
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        useAuthStore
+          .getState()
+          .setAccessToken(newAccessToken);
+
+        originalRequest.headers.Authorization =
+          `Bearer ${newAccessToken}`;
+
         return instance(originalRequest);
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         useAuthStore.getState().clearState();
-        return Promise.reject(refreshError);
+
+        return Promise.reject(
+          refreshError.response?.data ||
+            refreshError
+        );
       }
     }
 
-    return Promise.reject(error);
-  },
+    return Promise.reject(
+      error.response?.data || error
+    );
+  }
 );
+
 export default instance;

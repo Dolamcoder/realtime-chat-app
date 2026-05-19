@@ -18,6 +18,7 @@ export const authService = {
   },
   signIn: async (username: String, password: String) => {
     const res = await api.post("/auth/login", { username, password });
+    console.log("<<<<<<<<<<<<<<<<<<<<", res);
     return res.data;
   },
   signOut: async () => {
