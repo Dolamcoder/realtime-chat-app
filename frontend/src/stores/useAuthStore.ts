@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ loading: true });
       const data = await authService.signIn(username, password);
-      get().setAccessToken(data.accessToken );
+      get().setAccessToken(data.accessToken);
       console.log("<<<<check data", data.accessToken);
       await get().fetchMe();
       toast.success("Đăng nhập thành công");
@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ loading: true });
       const accessToken = await authService.refresh();
-      const { user, fetchMe, setAccessToken} = get();
+      const { user, fetchMe, setAccessToken } = get();
       setAccessToken(accessToken);
       if (!user) {
         await fetchMe();

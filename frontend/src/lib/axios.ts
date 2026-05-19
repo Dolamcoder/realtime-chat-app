@@ -1,23 +1,27 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import axios from "axios";
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_BACKEND_URL,
-    withCredentials: true,
-})
-instance.interceptors.response.use(function(response){
-    if(response.data && response.data.data) return response.data;
-    return response;
-}, function(error){
-    if(error.response && error.response.data) return Promise.reject(error.response.data);
-    return Promise.reject(error);
+  baseURL: import.meta.env.VITE_API_BACKEND_URL,
+  withCredentials: true,
 });
-instance.interceptors.request.use((config)=>{
-    const {accessToken}=useAuthStore.getState();
-    if(accessToken){
-        config.headers.Authorization=`Bearer ${accessToken}`;
-    }
-    return config;
-})
+instance.interceptors.response.use(
+  function (response) {
+    if (response.data && response.data.data) return response.data;
+    return response;
+  },
+  function (error) {
+    if (error.response && error.response.data)
+      return Promise.reject(error.response.data);
+    return Promise.reject(error);
+  },
+);
+instance.interceptors.request.use((config) => {
+  const { accessToken } = useAuthStore.getState();
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+});
 instance.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -36,7 +40,9 @@ instance.interceptors.response.use(
       originalRequest._retryCount += 1;
 
       try {
-        const res = await instance.post("/auth/refresh", { withCredentials: true });
+        const res = await instance.post("/auth/refresh", {
+          withCredentials: true,
+        });
         const newAccessToken = res.data.accessToken;
 
         useAuthStore.getState().setAccessToken(newAccessToken);
@@ -50,6 +56,6 @@ instance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
-export default instance
+export default instance;
