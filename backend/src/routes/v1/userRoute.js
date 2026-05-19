@@ -1,6 +1,5 @@
 import express from "express";
 const router=express.Router();
-import {authMiddleware} from "../../middlewares/authMiddleware.js";
 import {authMe} from "../../controllers/userController.js";
-router.get("/me", authMiddleware, authMe);
+router.get("/me", authMe);
 export default router;

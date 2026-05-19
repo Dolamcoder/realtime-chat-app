@@ -23,7 +23,7 @@ export const getUserByUsername = async (username) => {
 };
 export const getUserById = async (userId) => {
   try {
-    const user = await User.findById(userId).select("-hashedPassword");
+    const user = await User.findById(userId).select("-hashedPassword").lean();
     if (!user) {
       throw new ApiError(404, "Không tìm thấy người dùng");
     }
