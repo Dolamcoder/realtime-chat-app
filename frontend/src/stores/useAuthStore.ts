@@ -39,6 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error(err);
       const errorMessage = err?.message || "Đăng nhập thất bại";
       toast.error(errorMessage);
+      throw err;
     } finally {
       set({ loading: false });
     }

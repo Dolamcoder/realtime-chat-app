@@ -1,10 +1,16 @@
 import { asyncHandler } from "../utils/asyncHandle.js";
 import { getUserById } from "../services/userService.js";
-import { checkRelation, createFriend } from "../services/friendService.js";
+import {
+  checkRelation,
+  createFriend,
+  getAllFriendShips,
+} from "../services/friendService.js";
 import {
   sendRequest,
   getRequestById,
   deleteRequest,
+  getAllSentRequest,
+  getAllSReceivedRequest,
 } from "../services/friendRequestService.js";
 export const sendFriendRequest = asyncHandler(async (req, res) => {
   const { to, message } = req.body;
@@ -49,4 +55,21 @@ export const deleteFriendRequest = asyncHandler(async (req, res) => {
   const request = await getRequestById(requestId);
   await deleteRequest(requestId);
   return res.sendStatus(204);
+});
+export const getAllFriends = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const friendShips = await getAllFriendShips(userId);
+  if (!friendShips.length) {
+    return res.status(200).json({ friends: [] });
+  }
+  const friends = friendShips.map((f) =>
+    f.userA._id.toString() === userId.toString() ? f.userB : f.userA,
+  );
+  return res.status(200).json({ friends });
+});
+export const getAllFriendRequest = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const sent = await getAllSentRequest(userId);
+  const received = await getAllSReceivedRequest(userId);
+  return res.status(200).json({sent, received});
 });

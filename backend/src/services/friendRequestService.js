@@ -20,3 +20,13 @@ export const deleteRequest=async(requestId)=>{
         await FriendRequest.findByIdAndDelete(requestId);
     }catch(err){throw err};
 }
+export const getAllSentRequest=async(userId)=>{
+    try{
+        return await FriendRequest.findOne({from:userId}).populate("from", "_id username displayName avatarUrl");
+    }catch(err){throw errr};
+}
+export const getAllSReceivedRequest=async(userId)=>{
+    try{
+        return await FriendRequest.findOne({to:userId}).populate("to", "_id username displayName avatarUrl");
+    }catch(err){throw errr};
+}

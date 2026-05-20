@@ -64,4 +64,4 @@ const conversationSchema=new mongoose.Schema({
     }
 })
 conversationSchema.index({"participants.userId":1, lastMessageAt: -1});
-module.exports=mongoose.model("Conversation", conversationSchema);
+export const Conversation=mongoose.model("Conversation", conversationSchema);
