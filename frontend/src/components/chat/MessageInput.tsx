@@ -5,10 +5,24 @@ import { ImagePlus, Send } from "lucide-react";
 import { Input } from "../ui/input";
 import type { Conversation } from "@/types/chat";
 import EmojiPicker from "./EmojiPicker";
+import { useChatStore } from "@/stores/useChatStore";
 
 const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
   const { user } = useAuthStore();
   const [value, setValue] = useState("");
+  if(!user) return;
+  const { sendDirectMessage, sendGroupMessage } = useChatStore();
+  const sendMessage = async () => {
+    console.log("<<<< call api");
+    if (selectedConvo.type === "direct") {
+      const participants = selectedConvo.participants;
+      const otherUser = participants.filter((p) => p._id !== user._id)[0];
+      await sendDirectMessage(otherUser._id, value);
+    }
+    else{
+      await sendGroupMessage(value, selectedConvo._id);
+    }
+  };
   if (!user) return;
   return (
     <div className="flex items-center gap-2 p-3 min-h-[56px] bg-background">
@@ -44,6 +58,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
       </div>
 
       <Button
+        onClick={sendMessage}
         className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105"
         disabled={!value.trim()}
       >

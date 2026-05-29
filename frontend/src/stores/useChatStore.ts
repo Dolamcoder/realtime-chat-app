@@ -70,8 +70,38 @@ export const useChatStore = create<ChatState>()(
           });
         } catch (err) {
           console.error(err);
-        }finally{
-          set({messageLoading:false});
+        } finally {
+          set({ messageLoading: false });
+        }
+      },
+      sendDirectMessage: async (recipientId, content) => {
+        try {
+          const { activeConversationId } = get();
+          await chatService.sendDirectMessage(
+            recipientId,
+            content,
+            activeConversationId || undefined,
+          );
+          set((state) => ({
+            conversations: state.conversations.map((c) =>
+              c._id === activeConversationId ? { ...c, seenBy: [] } : c,
+            ),
+          }));
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      sendGroupMessage: async (content, conversationId) => {
+        try {
+          const {activeConversationId}=get();
+          await chatService.sendGroupMessage(content, conversationId);
+          set((state) => ({
+            conversations: state.conversations.map((c) =>
+              c._id === activeConversationId ? { ...c, seenBy: [] } : c,
+            ),
+          }));
+        } catch (err) {
+          console.error(err);
         }
       },
     }),
