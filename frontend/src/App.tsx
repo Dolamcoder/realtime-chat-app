@@ -4,10 +4,17 @@ import SighInPage from "./pages/SignInPage";
 import ChatAppPage from "./pages/ChatAppPage";
 import { Toaster } from "sonner";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { useThemeStore } from "./stores/useThemeStore";
+import { useEffect } from "react";
 
 function App() {
+  const { isDark, setTheme } = useThemeStore();
+  useEffect(() => {
+    setTheme(isDark);
+  }, [isDark]);
   return (
-    <>
+    <TooltipProvider>
       <Toaster richColors />
       <BrowserRouter>
         <Routes>
@@ -18,7 +25,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </>
+    </TooltipProvider>
   );
 }
 

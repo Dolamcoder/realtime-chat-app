@@ -55,7 +55,8 @@ const conversationSchema=new mongoose.Schema({
         ref: "User",
     }],
     lastMessage:{
-        type: [lastMessageSchema],
+        type: lastMessageSchema,
+        default: null,
     },
     unreadCounts:{
         type: Map,
