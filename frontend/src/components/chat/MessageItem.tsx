@@ -10,7 +10,7 @@ const MessageItem = ({
   selectedConvo,
   lastMessageStatus,
 }: MessageItemProps) => {
-  const check=message.isOwn && message._id === selectedConvo.lastMessage?._id ;
+  const check = message.isOwn && message._id === selectedConvo.lastMessage?._id;
   console.log("<<<<<check ", check)
   console.log("<<<<status", message);
   console.log("<<<<<check convo", selectedConvo);
@@ -19,8 +19,8 @@ const MessageItem = ({
     index === 0 ||
     message.senderId !== prev?.senderId ||
     new Date(message.createdAt).getTime() -
-      new Date(prev?.createdAt).getTime() >
-      120000;
+    new Date(prev?.createdAt || 0).getTime() >
+    300000;
   const participant = selectedConvo.participants.find(
     (p: Participant) => p._id.toString() === message.senderId.toString(),
   );

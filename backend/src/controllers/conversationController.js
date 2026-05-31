@@ -59,6 +59,7 @@ export const getMessages = asyncHandler(async (req, res) => {
       messages.pop();
     }
     messages = messages.reverse();
+    console.log("<<<<<data be", messages);
     return res.status(200).json({
       messages,
       nextCursor,
