@@ -10,7 +10,7 @@ import { useChatStore } from "@/stores/useChatStore";
 const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
   const { user } = useAuthStore();
   const [value, setValue] = useState("");
-  if(!user) return;
+  if (!user) return;
   const { sendDirectMessage, sendGroupMessage } = useChatStore();
   const sendMessage = async () => {
     console.log("<<<< call api");
@@ -19,8 +19,8 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
       const otherUser = participants.filter((p) => p._id !== user._id)[0];
       await sendDirectMessage(otherUser._id, value);
     }
-    else{
-      await sendGroupMessage(value, selectedConvo._id);
+    else {
+      await sendGroupMessage(selectedConvo._id, value);
     }
   };
   if (!user) return;

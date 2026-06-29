@@ -6,11 +6,13 @@ import { cn } from "@/lib/utils";
 import UserAvatar from "./UserAvatar";
 import StatusBadge from "./StatusBadge";
 import UnreadCountBadge from "./unreadCountBadge";
+import { useSocketStore } from "@/stores/useSocketStore";
 
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation, messages, fetchMessages } =
-    useChatStore();
+  const { activeConversationId, setActiveConversation, messages, fetchMessages } = useChatStore();
+  const { onlineUsers } = useSocketStore();
+  console.log("check online User", onlineUsers);
   if (!user) return;
   const otherUser = convo.participants.find((p) => p._id !== user._id);
   if (!otherUser) return;
@@ -20,7 +22,7 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
     setActiveConversation(convoId);
     if (!messages[convoId]) {
       await fetchMessages(convoId);
-    
+
     }
   };
 
@@ -36,13 +38,13 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
       isActive={activeConversationId === convo._id}
       onSelect={handleSelectConversation}
       leftSection={
-          <>
+        <>
           <UserAvatar
             type="sidebar"
             name={otherUser.displayName ?? ""}
             avatarUrl={otherUser.avatarUrl ?? undefined}
           />
-          <StatusBadge status="offline" />
+          <StatusBadge status={onlineUsers.includes(otherUser?._id ?? "") ? "online" : "offline"} />
           {unreadCount > 0 && <UnreadCountBadge unreadCount={unreadCount} />}
         </>
       }

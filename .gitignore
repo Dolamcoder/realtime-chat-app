@@ -1,9 +1,5 @@
 # Backend
 backend/node_modules
 backend/.env
-<<<<<<< HEAD
-# Frontend
-=======
->>>>>>> message-ui
 frontend/node_modules
 frontend/.env.development

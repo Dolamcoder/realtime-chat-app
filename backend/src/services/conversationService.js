@@ -17,15 +17,15 @@ export const createDirectConversation = async (senderId, recipientId) => {
 };
 export const getConversationById = async (conversationId) => {
   try {
-    const conversation=await Conversation.findById(conversationId).lean();
-    if(!conversation) throw new ApiError(404, "Không tìm thấy cuộc trò chuyện")
+    const conversation = await Conversation.findById(conversationId).lean();
+    if (!conversation) throw new ApiError(404, "Không tìm thấy cuộc trò chuyện")
   } catch (err) {
     throw err;
   }
 };
-export const getConversationByUserId=async(userId)=>{
-  try{
-     return await Conversation.find({
+export const getConversationByUserId = async (userId) => {
+  try {
+    return await Conversation.find({
       "participants.userId": userId,
     })
       .sort({ lastMessageAt: -1, updatedAt: -1 })
@@ -41,11 +41,11 @@ export const getConversationByUserId=async(userId)=>{
         path: "seenBy",
         select: "displayName avatarUrl",
       });
-  }catch(err){throw err};
+  } catch (err) { throw err };
 }
-export const createGroupContversation = async(userId, memberIds, name)=>{
-  try{
-     return await Conversation.create({
+export const createGroupContversation = async (userId, memberIds, name) => {
+  try {
+    return await Conversation.create({
       type: "group",
       participants: [{ userId }, ...memberIds.map((id) => ({ userId: id }))],
       group: {
@@ -54,7 +54,7 @@ export const createGroupContversation = async(userId, memberIds, name)=>{
       },
       lastMessageAt: new Date(),
     });
-  }catch(err){throw err}
+  } catch (err) { throw err }
 };
 export const getUserConversationsForSocketIO = async (userId) => {
   try {
@@ -69,8 +69,8 @@ export const getUserConversationsForSocketIO = async (userId) => {
     return [];
   }
 };
-export const updateMarkAsSeen=async(conversationId, userId)=>{
-  try{
+export const updateMarkAsSeen = async (conversationId, userId) => {
+  try {
     return await Conversation.findByIdAndUpdate(
       conversationId,
       {
@@ -81,5 +81,13 @@ export const updateMarkAsSeen=async(conversationId, userId)=>{
         new: true,
       },
     );
-  }catch(err){throw err}
+  } catch (err) { throw err }
+}
+export const getConversationIdForSocketIO = async (userId) => {
+  try {
+    const conversations = await Conversation.find({
+      "participants.userId": userId
+    }, { _id: 1 })
+    return conversations.map((c) => c._id.toString());
+  } catch (err) { throw err }
 }
