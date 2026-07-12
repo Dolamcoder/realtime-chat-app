@@ -7,9 +7,10 @@ import GroupChatAvatar from "./GroupChatAvatar";
 
 const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation, messages, fetchMessages} = useChatStore();
+  const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
 
   if (!user) return null;
+  const lastMessage = convo.lastMessage?.content ?? "";
 
   const unreadCount = convo.unreadCounts[user._id];
   const name = convo.group?.name ?? "";
@@ -18,6 +19,7 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
     if (!messages[convoId]) {
       await fetchMessages(convoId);
     }
+    await markSeen(convoId);
   };
 
   return (
@@ -33,19 +35,19 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
       onSelect={handleSelectConversation}
       unreadCount={unreadCount}
       leftSection={
-        <>  
-            <>
-          {unreadCount > 0 && <UnreadCountBadge unreadCount={unreadCount} />}
-          <GroupChatAvatar
-            participants={convo.participants}
-            type="chat"
-          />
-        </>
+        <>
+          <>
+            {unreadCount > 0 && <UnreadCountBadge unreadCount={unreadCount} />}
+            <GroupChatAvatar
+              participants={convo.participants}
+              type="chat"
+            />
+          </>
         </>
       }
       subtitle={
         <p className="text-sm truncate text-muted-foreground">
-          {convo.participants.length} thành viên
+          {lastMessage ? lastMessage : convo.participants.map(p => p.displayName).join(", ")}
         </p>
       }
     />

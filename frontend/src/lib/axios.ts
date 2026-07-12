@@ -82,7 +82,7 @@ instance.interceptors.response.use(
 
         return Promise.reject(
           refreshError.response?.data ||
-            refreshError
+          refreshError
         );
       }
     }

@@ -17,8 +17,9 @@ export const createDirectConversation = async (senderId, recipientId) => {
 };
 export const getConversationById = async (conversationId) => {
   try {
-    const conversation = await Conversation.findById(conversationId).lean();
+    const conversation = await Conversation.findById(conversationId);
     if (!conversation) throw new ApiError(404, "Không tìm thấy cuộc trò chuyện")
+    return conversation;
   } catch (err) {
     throw err;
   }
@@ -80,7 +81,10 @@ export const updateMarkAsSeen = async (conversationId, userId) => {
       {
         new: true,
       },
-    );
+    ).populate({
+      path: "seenBy",
+      select: "displayName avatarUrl",
+    });
   } catch (err) { throw err }
 }
 export const getConversationIdForSocketIO = async (userId) => {
@@ -91,3 +95,13 @@ export const getConversationIdForSocketIO = async (userId) => {
     return conversations.map((c) => c._id.toString());
   } catch (err) { throw err }
 }
+export const findDirectConversation = async (userId1, userId2) => {
+  console.log("sender", userId1);
+  console.log("recipient", userId2);
+  return await Conversation.findOne({
+    type: "direct",
+    "participants.userId": {
+      $all: [userId1, userId2]
+    }
+  });
+};

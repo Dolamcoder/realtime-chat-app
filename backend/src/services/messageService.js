@@ -1,10 +1,16 @@
 import Message from "../models/Message.js";
-export const createMessage = async (conversationId, senderId, content) => {
+export const createMessage = async (conversationId, senderId, content, imgUrls = [], extra = {}) => {
   try {
-    return Message.create({
+    return await Message.create({
       conversationId,
       senderId,
       content,
+      imgUrls,
+      fileUrl: extra.fileUrl || null,
+      fileName: extra.fileName || null,
+      fileType: extra.fileType || null,
+      voiceUrl: extra.voiceUrl || null,
+      voiceDuration: extra.voiceDuration || null,
     });
   } catch (err) {
     throw err;

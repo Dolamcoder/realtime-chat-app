@@ -41,10 +41,11 @@ export interface ChatState {
   fetchConversations: () => Promise<void>;
   fetchMessages: (conversationId: string) => Promise<void>;
   setActiveConversation: (id: string | null) => void;
-  sendDirectMessage: (recipientId: string, content: string) => Promise<void>;
-  sendGroupMessage: (conversationId: string, content: string) => Promise<void>;
+  sendDirectMessage: (recipientId: string, content: string, images?: File[], file?: File | null, voice?: File | null, voiceDuration?: number | null) => Promise<void>;
+  sendGroupMessage: (conversationId: string, content: string, images?: File[], file?: File | null, voice?: File | null, voiceDuration?: number | null) => Promise<void>;
   addMessage: (message: Message) => Promise<void>;
   updateConversation: (conversation: Conversation) => void;
+  markSeen: (conversationId: string) => Promise<void>;
 }
 export interface SocketState {
   socket: Socket | null;

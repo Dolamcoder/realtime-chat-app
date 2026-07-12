@@ -4,7 +4,15 @@ import {
   sendDirectMessage,
   sendGroupMessage,
 } from "../../controllers/nessageController.js";
-import {checkFriendship, checkGroupMembership} from "../../middlewares/friendMiddleware.js"
-router.post("/direct", checkFriendship, sendDirectMessage);
-router.post("/group", checkGroupMembership, sendGroupMessage);
+import {checkFriendship, checkGroupMembership} from "../../middlewares/friendMiddleware.js";
+import { upload } from "../../middlewares/uploadMiddleware.js";
+
+const uploadFields = upload.fields([
+  { name: "images", maxCount: 10 },
+  { name: "file", maxCount: 1 },
+  { name: "voice", maxCount: 1 },
+]);
+
+router.post("/direct", uploadFields, checkFriendship, sendDirectMessage);
+router.post("/group", uploadFields, checkGroupMembership, sendGroupMessage);
 export default router;

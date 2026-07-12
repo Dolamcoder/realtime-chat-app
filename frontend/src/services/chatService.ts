@@ -14,16 +14,73 @@ export const chatService = {
     );
     return { messages: res.data.messages, cursor: res.data.nextCursor };
   },
-  async sendDirectMessage(recipientId:string, content:string="", conversationId?:string){
-    const res=await api.post("/messages/direct", {
-      recipientId, content, conversationId
-    })
+  async sendDirectMessage(
+    recipientId: string,
+    content: string = "",
+    images: File[] = [],
+    file: File | null = null,
+    voice: File | null = null,
+    voiceDuration: number | null = null
+  ) {
+    const formData = new FormData();
+    formData.append("recipientId", recipientId);
+    formData.append("content", content);
+    if (images && images.length > 0) {
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+    }
+    if (file) {
+      formData.append("file", file);
+    }
+    if (voice) {
+      formData.append("voice", voice);
+    }
+    if (voiceDuration !== null) {
+      formData.append("voiceDuration", String(voiceDuration));
+    }
+    const res = await api.post("/messages/direct", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data.message;
   },
-  async sendGroupMessage(content:string="", conversationId:string){
-    const res=await api.post("/messages/group", {
-      content, conversationId
-    })
+  async sendGroupMessage(
+    content: string = "",
+    conversationId: string,
+    images: File[] = [],
+    file: File | null = null,
+    voice: File | null = null,
+    voiceDuration: number | null = null
+  ) {
+    const formData = new FormData();
+    formData.append("conversationId", conversationId);
+    formData.append("content", content);
+    if (images && images.length > 0) {
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+    }
+    if (file) {
+      formData.append("file", file);
+    }
+    if (voice) {
+      formData.append("voice", voice);
+    }
+    if (voiceDuration !== null) {
+      formData.append("voiceDuration", String(voiceDuration));
+    }
+    const res = await api.post("/messages/group", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data.message;
+  },
+  async markSeen(conversationId: String) {
+    const res = await api.patch(`/conversations/${conversationId}/seen`);
+    console.log("<<<<<<<<<<<updateSeenfe", res.data)
+    return res.data;
   }
 };

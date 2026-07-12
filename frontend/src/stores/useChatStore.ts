@@ -74,13 +74,16 @@ export const useChatStore = create<ChatState>()(
           set({ messageLoading: false });
         }
       },
-      sendDirectMessage: async (recipientId, content) => {
+      sendDirectMessage: async (recipientId, content, images = [], file = null, voice = null, voiceDuration = null) => {
         try {
           const { activeConversationId } = get();
           await chatService.sendDirectMessage(
             recipientId,
             content,
-            activeConversationId || undefined,
+            images,
+            file,
+            voice,
+            voiceDuration,
           );
           set((state) => ({
             conversations: state.conversations.map((c) =>
@@ -91,10 +94,10 @@ export const useChatStore = create<ChatState>()(
           console.error(err);
         }
       },
-      sendGroupMessage: async (content, conversationId) => {
+      sendGroupMessage: async (conversationId, content, images = [], file = null, voice = null, voiceDuration = null) => {
         try {
           const { activeConversationId } = get();
-          await chatService.sendGroupMessage(content, conversationId);
+          await chatService.sendGroupMessage(content, conversationId, images, file, voice, voiceDuration);
           set((state) => ({
             conversations: state.conversations.map((c) =>
               c._id === activeConversationId ? { ...c, seenBy: [] } : c,
@@ -135,9 +138,31 @@ export const useChatStore = create<ChatState>()(
         }
       },
       updateConversation: (conversation) => {
+        console.log("debug update conversation");
         set((state) => ({
           conversations: state.conversations.map((c) => c._id === conversation._id ? { ...c, ...conversation } : c),
         }))
+      },
+      markSeen: async (conversationId: string) => {
+        try {
+          const res = await chatService.markSeen(conversationId);
+          set((state) => ({
+            conversations: state.conversations.map((c) =>
+              c._id === conversationId
+                ? {
+                    ...c,
+                    seenBy: res.seenBy || [],
+                    unreadCounts: {
+                      ...c.unreadCounts,
+                      [useAuthStore.getState().user?._id ?? ""]: 0,
+                    },
+                  }
+                : c
+            ),
+          }));
+        } catch (err) {
+          console.error(err);
+        }
       }
     }),
     {

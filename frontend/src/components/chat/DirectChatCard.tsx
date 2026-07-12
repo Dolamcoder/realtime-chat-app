@@ -10,8 +10,9 @@ import { useSocketStore } from "@/stores/useSocketStore";
 
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation, messages, fetchMessages } = useChatStore();
+  const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
   const { onlineUsers } = useSocketStore();
+  console.log("convo", convo)
   console.log("check online User", onlineUsers);
   if (!user) return;
   const otherUser = convo.participants.find((p) => p._id !== user._id);
@@ -22,8 +23,8 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
     setActiveConversation(convoId);
     if (!messages[convoId]) {
       await fetchMessages(convoId);
-
     }
+    await markSeen(convoId);
   };
 
   return (

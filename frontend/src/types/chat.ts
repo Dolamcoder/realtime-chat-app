@@ -50,6 +50,12 @@ export interface Message {
   senderId: string;
   content: string | null;
   imgUrl?: string | null;
+  imgUrls?: string[];
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileType?: string | null;
+  voiceUrl?: string | null;
+  voiceDuration?: number | null;
   updatedAt?: string | null;
   createdAt: string;
   isOwn?: boolean;

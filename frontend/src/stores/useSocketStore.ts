@@ -22,11 +22,35 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         socket.on("online-users", (userIds) => {
             set({ onlineUsers: userIds });
         });
-        socket.on("new-message", ({ message, conversation }) => {
-            const { addMessage, updateConversation } = useChatStore.getState();
+        socket.on("new-message", ({ message, conversation, unreadCounts }) => {
+            const { addMessage, updateConversation, activeConversationId, markSeen } = useChatStore.getState();
             addMessage(message);
+            const lastMessage = {
+                _id: conversation.lastMessage._id,
+                content: conversation.lastMessage.content,
+                createdAt: conversation.lastMessage.createdAt,
+                sender: {
+                    _id: conversation.lastMessage.senderId,
+                    displayName: "",
+                    avatarUrl: null,
+                },
+            };
+            const updatedConversation = {
+                ...conversation,
+                lastMessage,
+                unreadCounts,
+            };
+            updateConversation(updatedConversation);
+
+            const currentUserId = useAuthStore.getState().user?._id;
+            if (message.conversationId === activeConversationId && message.senderId !== currentUserId) {
+                markSeen(message.conversationId);
+            }
+        });
+        socket.on("read-message", ({ conversation }) => {
+            const { updateConversation } = useChatStore.getState();
             updateConversation(conversation);
-        })
+        });
         socket.on("connect_error", (err) => {
             console.log("<<<<err>>>>", err);
         });
