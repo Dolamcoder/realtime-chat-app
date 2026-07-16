@@ -18,10 +18,10 @@ const UserAvatar = ({ type, name, avatarUrl, className }: IUserAvatarProps) => {
   return (
     <Avatar
       className={cn(
-        className ?? "",
         type === "sidebar" && "size-12 text-base",
         type === "chat" && "size-8 text-sm",
-        type === "profile" && "size-24 text-3xl shadow-md"
+        type === "profile" && "size-24 text-3xl shadow-md",
+        className ?? "",
       )}
     >
       <AvatarImage

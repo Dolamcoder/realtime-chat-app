@@ -76,6 +76,7 @@ const CallOverlay = () => {
                 type="sidebar"
                 name={targetUserName || "Moji"}
                 avatarUrl={targetUserAvatar || undefined}
+                className="!w-full !h-full"
               />
             </div>
           </div>

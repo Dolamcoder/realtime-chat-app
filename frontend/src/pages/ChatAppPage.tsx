@@ -8,7 +8,7 @@ const ChatAppPage = () => {
     <SidebarProvider>
       <AppSidebar />
 
-      <div className="flex h-screen w-full p-2">
+      <div className="flex h-screen w-full sm:p-2">
         <ChatWindowLayout />
       </div>
       <CallOverlay />

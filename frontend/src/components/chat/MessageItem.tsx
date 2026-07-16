@@ -4,6 +4,11 @@ import UserAvatar from "./UserAvatar";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { FileText, Download } from "lucide-react";
+
+// Lấy base URL backend (bỏ /api/v1)
+const _API_URL = import.meta.env.VITE_API_BACKEND_URL || "http://localhost:3000/api/v1";
+const BASE_URL = _API_URL.replace(/\/api\/v1\/?$/, "");
+
 const MessageItem = ({
   message,
   index,
@@ -50,81 +55,99 @@ const MessageItem = ({
         {/* tin nhắn */}
         <div
           className={cn(
-            "max-w-xs lg:max-w-md space-y-1 flex flex-col",
+            "max-w-[75vw] sm:max-w-xs lg:max-w-md space-y-1 flex flex-col",
             message.isOwn ? "items-end" : "items-start",
           )}
         >
-          <Card
-            className={cn(
-              message.content ? "p-3" : "p-0 bg-transparent border-0 shadow-none",
-              message.isOwn && message.content
-                ? "chat-bubble-sent border-0"
-                : message.content
-                  ? "chat-bubble-received"
-                  : "",
-            )}
-          >
-            {message.content && (
-              <p className="text-sm leading-relaxed break-words">
-                {message.content}
-              </p>
-            )}
+          {(() => {
+            const hasMedia = !!(message.voiceUrl || message.fileUrl || (message.imgUrls && message.imgUrls.length > 0));
+            const hasContent = !!message.content;
+            const needsBubble = hasContent || message.fileUrl;
 
-            {message.imgUrls && message.imgUrls.length > 0 && (
-              <div className={cn(
-                "grid gap-1.5 max-w-[280px]",
-                message.content ? "mt-2" : "",
-                message.imgUrls.length === 1 ? "grid-cols-1" :
-                  message.imgUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"
-              )}>
-                {message.imgUrls.map((img, idx) => {
-                  const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
-                  const baseUrl = socketUrl.endsWith("/") ? socketUrl.slice(0, -1) : socketUrl;
-                  const cleanPath = img.startsWith("/") ? img : `/${img}`;
-                  const fullUrl = `${baseUrl}${cleanPath}`;
-                  return (
-                    <div key={idx} className="relative rounded overflow-hidden border border-border/30 bg-muted aspect-square">
-                      <a href={fullUrl} target="_blank" rel="noopener noreferrer">
-                        <img
-                          src={fullUrl}
-                          alt="uploaded image"
-                          className="size-full object-cover hover:scale-105 transition-smooth cursor-pointer"
-                        />
-                      </a>
+            return (
+              <Card
+                className={cn(
+                  // Padding: có content hoặc file thì p-3, chỉ có image thì p-0, voice thì p-2
+                  hasContent || message.fileUrl ? "p-3"
+                    : message.voiceUrl ? "p-2"
+                    : "p-0 bg-transparent border-0 shadow-none",
+                  // Bubble color
+                  message.isOwn && needsBubble
+                    ? "chat-bubble-sent border-0"
+                    : needsBubble
+                      ? "chat-bubble-received"
+                      : message.isOwn && message.voiceUrl
+                        ? "bg-primary/10 border border-primary/20"
+                        : message.voiceUrl
+                          ? "bg-muted/60 border border-border/40"
+                          : "",
+                )}
+              >
+                {message.content && (
+                  <p className="text-sm leading-relaxed break-words">
+                    {message.content}
+                  </p>
+                )}
+
+                {message.imgUrls && message.imgUrls.length > 0 && (
+                  <div className={cn(
+                    "grid gap-1.5 max-w-[280px]",
+                    message.content ? "mt-2" : "",
+                    message.imgUrls.length === 1 ? "grid-cols-1" :
+                      message.imgUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"
+                  )}>
+                    {message.imgUrls.map((img, idx) => {
+                      const cleanPath = img.startsWith("/") ? img : `/${img}`;
+                      const fullUrl = `${BASE_URL}${cleanPath}`;
+                      return (
+                        <div key={idx} className="relative rounded overflow-hidden border border-border/30 bg-muted aspect-square">
+                          <a href={fullUrl} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={fullUrl}
+                              alt="uploaded image"
+                              className="size-full object-cover hover:scale-105 transition-smooth cursor-pointer"
+                            />
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {message.fileUrl && (
+                  <div className="flex items-center gap-3 rounded-lg w-full max-w-[280px]">
+                    <FileText className="size-8 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{message.fileName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{message.fileType}</p>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-            {message.fileUrl && (
-              <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border/40 bg-muted/30 w-64 md:w-72">
-                <FileText className="size-8 text-primary shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{message.fileName}</p>
-                  <p className="text-xs text-muted-foreground truncate">{message.fileType}</p>
-                </div>
-                <a
-                  href={`${import.meta.env.VITE_SOCKET_URL || "http://localhost:3000"}${message.fileUrl}`}
-                  download={message.fileName || "file"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 hover:bg-primary/10 rounded-full text-primary shrink-0 transition-smooth"
-                >
-                  <Download className="size-4" />
-                </a>
-              </div>
-            )}
+                    <a
+                      href={`${BASE_URL}${message.fileUrl}`}
+                      download={message.fileName || "file"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 hover:bg-primary/10 rounded-full text-primary shrink-0 transition-smooth"
+                    >
+                      <Download className="size-4" />
+                    </a>
+                  </div>
+                )}
 
-            {message.voiceUrl && (
-              <div className="flex items-center gap-2 w-64 md:w-72">
-                <audio
-                  src={`${import.meta.env.VITE_SOCKET_URL || "http://localhost:3000"}${message.voiceUrl}`}
-                  controls
-                  className="h-9 w-full rounded focus:outline-none"
-                />
-              </div>
-            )}
-          </Card>
+                {message.voiceUrl && (
+                  <div className="flex items-center w-full" style={{ minWidth: "200px", maxWidth: "260px" }}>
+                    <audio
+                      src={`${BASE_URL}${message.voiceUrl}`}
+                      controls
+                      controlsList="nodownload"
+                      className="w-full rounded"
+                      style={{ height: "36px", minWidth: 0 }}
+                    />
+                  </div>
+                )}
+              </Card>
+            );
+          })()}
+
           {/* seen/ delivered */}
           {message.isOwn && message._id === selectedConvo.lastMessage?._id && (
             <Badge

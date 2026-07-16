@@ -194,7 +194,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
         </div>
       )}
 
-      <div className="flex items-center gap-2 p-3 min-h-[56px]">
+      <div className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 min-h-[52px]">
         {/* Hidden inputs */}
         <input
           type="file"
@@ -239,12 +239,12 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
         ) : (
           /* Normal controls */
           <>
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-0">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                className="hover:bg-primary/10 transition-smooth"
+                className="hover:bg-primary/10 transition-smooth size-8 sm:size-9"
                 disabled={!!selectedFile || !!voiceBlob}
               >
                 <ImagePlus className="size-4" />
@@ -253,7 +253,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => docInputRef.current?.click()}
-                className="hover:bg-primary/10 transition-smooth"
+                className="hover:bg-primary/10 transition-smooth size-8 sm:size-9"
                 disabled={selectedImages.length > 0 || !!voiceBlob}
               >
                 <Paperclip className="size-4" />
@@ -262,7 +262,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
                 variant="ghost"
                 size="icon"
                 onClick={startRecording}
-                className="hover:bg-primary/10 transition-smooth text-primary-glow"
+                className="hover:bg-primary/10 transition-smooth text-primary-glow size-8 sm:size-9"
                 disabled={selectedImages.length > 0 || !!selectedFile || !!voiceBlob}
               >
                 <Mic className="size-4" />

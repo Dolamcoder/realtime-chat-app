@@ -5,7 +5,8 @@ import { useAuthStore } from "./useAuthStore";
 import { useChatStore } from "./useChatStore";
 import { useCallStore } from "./useCallStore";
 
-const socketURL = import.meta.env.VITE_SOCKET_URL;
+const socketURL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
+
 export const useSocketStore = create<SocketState>((set, get) => ({
     socket: null,
     onlineUsers: [],
