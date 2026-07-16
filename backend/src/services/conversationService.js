@@ -79,7 +79,7 @@ export const updateMarkAsSeen = async (conversationId, userId) => {
         $set: { [`unreadCounts.${userId}`]: 0 },
       },
       {
-        new: true,
+        returnDocument: "after",
       },
     ).populate({
       path: "seenBy",

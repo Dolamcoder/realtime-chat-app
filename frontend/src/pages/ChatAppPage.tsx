@@ -1,6 +1,7 @@
 import ChatWindowLayout from "@/components/chat/ChatWindowLayout";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import CallOverlay from "@/components/chat/CallOverlay";
 
 const ChatAppPage = () => {
   return (
@@ -10,6 +11,7 @@ const ChatAppPage = () => {
       <div className="flex h-screen w-full p-2">
         <ChatWindowLayout />
       </div>
+      <CallOverlay />
     </SidebarProvider>
   );
 };

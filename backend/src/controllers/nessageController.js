@@ -43,7 +43,7 @@ export const sendDirectMessage = asyncHandler(async (req, res) => {
         voiceUrl,
         voiceDuration: voiceDuration ? Number(voiceDuration) : null,
     });
-    updateConversationAfterCreateMessage(conversation, message, senderId);
+    await updateConversationAfterCreateMessage(conversation, message, senderId);
     await conversation.save();
     emitNewMessage(io, conversation, message);
     return res.status(200).json({ message });
@@ -53,7 +53,7 @@ export const sendGroupMessage = asyncHandler(async (req, res) => {
     const { conversationId, content, voiceDuration } = req.body;
     const senderId = req.user._id;
     const conversation = req.conversation;
-    
+
     const imgUrls = [];
     let fileUrl = null;
     let fileName = null;

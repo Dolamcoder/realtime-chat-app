@@ -60,8 +60,8 @@ const MessageItem = ({
               message.isOwn && message.content
                 ? "chat-bubble-sent border-0"
                 : message.content
-                ? "chat-bubble-received"
-                : "",
+                  ? "chat-bubble-received"
+                  : "",
             )}
           >
             {message.content && (
@@ -74,8 +74,8 @@ const MessageItem = ({
               <div className={cn(
                 "grid gap-1.5 max-w-[280px]",
                 message.content ? "mt-2" : "",
-                message.imgUrls.length === 1 ? "grid-cols-1" : 
-                message.imgUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"
+                message.imgUrls.length === 1 ? "grid-cols-1" :
+                  message.imgUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"
               )}>
                 {message.imgUrls.map((img, idx) => {
                   const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";

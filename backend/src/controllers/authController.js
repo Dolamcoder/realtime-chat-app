@@ -15,6 +15,22 @@ export const register = asyncHandler(async (req, res) => {
   });
 });
 
+const getCookieOptions = (req) => {
+  // Production: luôn HTTPS → secure + sameSite=none (cross-origin giữa fe và be)
+  // Development: check origin để hỗ trợ ngrok HTTPS trong khi vẫn dev local
+  const isProduction = process.env.NODE_ENV === 'production';
+  const origin = req.headers.origin || '';
+  const isHttpsOrigin = origin.startsWith('https://');
+  const useSecure = isProduction || isHttpsOrigin;
+
+  return {
+    httpOnly: true,
+    secure: useSecure,
+    sameSite: useSecure ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+};
+
 export const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
   const user = await getUserByUsername(username);
@@ -22,12 +38,7 @@ export const login = asyncHandler(async (req, res) => {
   const accessToken = createAccessToken(user._id);
   const refreshToken = createRefreshToken(user._id);
   await saveRefreshToken(user._id, refreshToken);
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie('refreshToken', refreshToken, getCookieOptions(req));
 
   return res.status(200).json({
     message: "Đăng nhập thành công",
@@ -35,10 +46,11 @@ export const login = asyncHandler(async (req, res) => {
   });
 });
 export const logOut = asyncHandler(async (req, res) => {
-  const token = req.cookie?.refreshToken;
+  const token = req.cookies?.refreshToken;
   if (token) {
     await deleteRefreshToken(token);
-    res.clearCookie("refreshToken");
+    const { maxAge: _, ...clearOptions } = getCookieOptions(req);
+    res.clearCookie("refreshToken", clearOptions);
   }
   return res.sendStatus(204);
 })

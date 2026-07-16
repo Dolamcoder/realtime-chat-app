@@ -29,7 +29,7 @@ const ChatWindowBody = () => {
   }
   console.log("<<<<<check", messages);
   return (
-    <div className="p-4 pb-1 bg-primary-foreground h-full flex flex-col overflow-hidden">
+    <div className="p-4 pb-3 bg-primary-foreground h-full flex flex-col overflow-hidden">
       <div className="flex flex-col-reverse overflow-y-auto overflow-x-hidden no-scrollbar">
         <div ref={messagesEndRef} />
         {reversedMessages.map((message, index) => (

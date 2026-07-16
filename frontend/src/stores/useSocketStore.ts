@@ -3,6 +3,8 @@ import { io, type Socket } from "socket.io-client";
 import type { SocketState } from "@/types/store";
 import { useAuthStore } from "./useAuthStore";
 import { useChatStore } from "./useChatStore";
+import { useCallStore } from "./useCallStore";
+
 const socketURL = import.meta.env.VITE_SOCKET_URL;
 export const useSocketStore = create<SocketState>((set, get) => ({
     socket: null,
@@ -50,6 +52,22 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         socket.on("read-message", ({ conversation }) => {
             const { updateConversation } = useChatStore.getState();
             updateConversation(conversation);
+        });
+        socket.on("incoming-call", (data) => {
+            console.log("<<<<<incoming-call>>>>>", data);
+            useCallStore.getState().handleIncomingCall(data);
+        });
+        socket.on("call-accepted", (data) => {
+            useCallStore.getState().handleCallAccepted(data);
+        });
+        socket.on("ice-candidate", (data) => {
+            useCallStore.getState().handleIceCandidate(data);
+        });
+        socket.on("call-rejected", () => {
+            useCallStore.getState().handleCallRejected();
+        });
+        socket.on("call-ended", () => {
+            useCallStore.getState().handleCallEnded();
         });
         socket.on("connect_error", (err) => {
             console.log("<<<<err>>>>", err);
