@@ -53,17 +53,17 @@ const FriendsList = () => {
     try {
       const res = await api.post("/conversations", { memberIds: [friendId] });
       const convo = res.data.conversation;
-      
+
       // Update local state directly so there is no delay
       useChatStore.setState((state) => {
         const exists = state.conversations.some((c) => c._id === convo._id);
         if (exists) return state;
         return { conversations: [convo, ...state.conversations] };
       });
-      
+
       setActiveConversation(convo._id);
       navigate("/");
-      
+
       // Sync list in background
       fetchConversations();
     } catch (err) {
@@ -114,7 +114,7 @@ const FriendsList = () => {
 
       {/* Body Layout */}
       <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 beautiful-scrollbar">
-        
+
         {/* Column 1: Friends list */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5 border-b border-border/40 pb-2">
@@ -150,7 +150,6 @@ const FriendsList = () => {
                       <h4 className="font-bold text-foreground text-sm leading-none">
                         {friend.displayName}
                       </h4>
-                      <span className="text-xs text-muted-foreground/80 mt-1 block">@{friend.username}</span>
                     </div>
                   </div>
                   <button
@@ -197,7 +196,6 @@ const FriendsList = () => {
                         <h4 className="font-bold text-foreground text-sm leading-none">
                           {req.from?.displayName}
                         </h4>
-                        <span className="text-xs text-muted-foreground/80 mt-1 block">@{req.from?.username}</span>
                         {req.message && (
                           <p className="text-xs bg-background/80 border border-border/20 px-2 py-1 rounded-md text-foreground/80 mt-1.5 italic max-w-[200px] truncate">
                             "{req.message}"
@@ -268,7 +266,6 @@ const FriendsList = () => {
                         <h4 className="font-bold text-foreground text-sm leading-none">
                           {req.to?.displayName}
                         </h4>
-                        <span className="text-xs text-muted-foreground/80 mt-1 block">@{req.to?.username}</span>
                       </div>
                     </div>
                     <div>

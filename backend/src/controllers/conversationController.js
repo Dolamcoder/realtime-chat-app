@@ -2,7 +2,7 @@ import { createGroupContversation, createDirectConversation, getConversationByUs
 import { getMessagesPage } from "../services/messageService.js";
 import { asyncHandler } from '../utils/asyncHandle.js';
 import { readMessage } from "../socket/messageSocket.js";
-import { io } from "../socket/index.js";
+import { io, emitToUser } from "../socket/index.js";
 export const createConversation = asyncHandler(async (req, res) => {
   const { name, memberIds } = req.body;
   const userId = req.user._id;
@@ -37,8 +37,18 @@ export const createConversation = asyncHandler(async (req, res) => {
   }));
 
   const formatted = { ...conversation.toObject(), participants };
+
+  // Notify all participants so they can join the new socket room
+  const conversationId = conversation._id.toString();
+  participants.forEach((p) => {
+    if (p._id) {
+      emitToUser(p._id.toString(), "new-conversation", { conversation: formatted, conversationId });
+    }
+  });
+
   return res.status(201).json({ conversation: formatted });
 });
+
 
 export const getConversations = asyncHandler(async (req, res) => {
   const userId = req.user._id;

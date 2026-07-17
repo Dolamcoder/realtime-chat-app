@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { Search, UserPlus, UserCheck, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
-import UserAvatar from "../user/UserAvatar";
+import UserAvatar from "./UserAvatar";
 import { Link } from "react-router";
 
 const FriendSuggestions = () => {
@@ -171,9 +171,10 @@ const FriendSuggestions = () => {
                           <h4 className="font-bold text-foreground text-sm leading-tight">
                             {usr.displayName}
                           </h4>
+                          <span className="text-xs text-muted-foreground/80 block">@{usr.username}</span>
                         </div>
                       </div>
-                      <div className="mt-2 w-full">
+                      <div className="mt-4 w-full">
                         {renderUserActionButton(usr)}
                       </div>
                     </div>
@@ -208,8 +209,8 @@ const FriendSuggestions = () => {
                       key={usr._id}
                       className="flex flex-col items-center text-center p-5 bg-background border border-border/30 hover:border-border/80 rounded-2xl hover:shadow-md transition-all duration-200 justify-between min-h-[220px]"
                     >
-                      <div className="flex flex-col items-center">
-                        <div className="w-28 h-28 rounded-full overflow-hidden border border-border/40 shadow-sm">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-16 h-16 rounded-full overflow-hidden border border-border/40 shadow-sm">
                           <UserAvatar
                             type="sidebar"
                             name={usr.displayName}
@@ -217,22 +218,20 @@ const FriendSuggestions = () => {
                             className="!w-full !h-full"
                           />
                         </div>
-
-                        <div className="mt-1 text-center">
-                          <h4 className="font-bold text-sm leading-tight">
+                        <div>
+                          <h4 className="font-bold text-foreground text-sm leading-tight">
                             {usr.displayName}
                           </h4>
-
+                          <span className="text-xs text-muted-foreground/80 block">@{usr.username}</span>
                           {usr.mutualCount > 0 && (
-                            <span className="mt-1 inline-block rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                            <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded mt-1 inline-block">
                               {usr.mutualCount} bạn chung
                             </span>
                           )}
                         </div>
-
-                        <div className="mt-2 w-full">
-                          {renderUserActionButton(usr)}
-                        </div>
+                      </div>
+                      <div className="mt-4 w-full">
+                        {renderUserActionButton(usr)}
                       </div>
                     </div>
                   );

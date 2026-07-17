@@ -98,6 +98,14 @@ io.on("connection", async (socket) => {
         }
     });
 
+    // Cho phép client join vào room của conversation mới được tạo
+    socket.on("join-conversation", ({ conversationId }) => {
+        if (conversationId) {
+            socket.join(conversationId);
+            console.log(`${user.displayName} joined room: ${conversationId}`);
+        }
+    });
+
     socket.on("disconnect", () => {
         const sockets = onlineUsers.get(userId);
         if (sockets) {

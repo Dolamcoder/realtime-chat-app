@@ -115,17 +115,44 @@ const MessageItem = ({
 
                 {message.fileUrl && (
                   <div className="flex items-center gap-3 rounded-lg w-full max-w-[280px]">
-                    <FileText className="size-8 text-primary shrink-0" />
+                    <FileText
+                      className={cn(
+                        "size-8 shrink-0",
+                        message.isOwn ? "text-white" : "text-primary"
+                      )}
+                    />
+
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{message.fileName}</p>
-                      <p className="text-xs text-muted-foreground truncate">{message.fileType}</p>
+                      <p
+                        className={cn(
+                          "text-sm font-semibold truncate",
+                          message.isOwn ? "text-white" : "text-gray-900"
+                        )}
+                      >
+                        {message.fileName}
+                      </p>
+
+                      <p
+                        className={cn(
+                          "text-xs truncate",
+                          message.isOwn ? "text-white/80" : "text-gray-500"
+                        )}
+                      >
+                        {message.fileType}
+                      </p>
                     </div>
+
                     <a
                       href={`${BASE_URL}${message.fileUrl}`}
                       download={message.fileName || "file"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-primary/10 rounded-full text-primary shrink-0 transition-smooth"
+                      className={cn(
+                        "p-1.5 rounded-full shrink-0 transition-colors",
+                        message.isOwn
+                          ? "text-white hover:bg-white/15"
+                          : "text-primary hover:bg-primary/10"
+                      )}
                     >
                       <Download className="size-4" />
                     </a>

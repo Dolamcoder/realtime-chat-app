@@ -1,6 +1,6 @@
-const ChatWindowSkeleton=()=>{
+const ChatWindowSkeleton = () => {
     return (
-        <div>skeleton</div>
+        <div></div>
     )
 }
 export default ChatWindowSkeleton;

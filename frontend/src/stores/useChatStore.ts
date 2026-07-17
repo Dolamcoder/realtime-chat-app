@@ -135,7 +135,7 @@ export const useChatStore = create<ChatState>()(
                       seenBy: [],
                       lastMessage: {
                         _id: newMsg._id,
-                        content: newMsg.content || (newMsg.imgUrls?.length ? "[Hình ảnh]" : newMsg.fileUrl ? "[Tệp tin]" : ""),
+                        content: newMsg.content || (newMsg.imgUrls?.length ? "[Hình ảnh]" : newMsg.fileUrl ? "[Tệp tin]" : newMsg.voiceUrl ? "[Tin nhắn thoại]" : ""),
                         createdAt: newMsg.createdAt,
                         sender: {
                           _id: newMsg.senderId,
