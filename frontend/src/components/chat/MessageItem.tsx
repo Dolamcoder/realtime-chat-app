@@ -5,7 +5,6 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { FileText, Download } from "lucide-react";
 
-// Lấy base URL backend (bỏ /api/v1)
 const _API_URL = import.meta.env.VITE_API_BACKEND_URL || "http://localhost:3000/api/v1";
 const BASE_URL = _API_URL.replace(/\/api\/v1\/?$/, "");
 
@@ -70,7 +69,7 @@ const MessageItem = ({
                   // Padding: có content hoặc file thì p-3, chỉ có image thì p-0, voice thì p-2
                   hasContent || message.fileUrl ? "p-3"
                     : message.voiceUrl ? "p-2"
-                    : "p-0 bg-transparent border-0 shadow-none",
+                      : "p-0 bg-transparent border-0 shadow-none",
                   // Bubble color
                   message.isOwn && needsBubble
                     ? "chat-bubble-sent border-0"

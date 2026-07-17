@@ -1,7 +1,8 @@
 import express from "express";
 const router=express.Router();
-import {sendFriendRequest, acceptFriendRequest, getAllFriendRequest, deleteFriendRequest, getAllFriends} from "../../controllers/friendController.js";
+import {sendFriendRequest, acceptFriendRequest, getAllFriendRequest, deleteFriendRequest, getAllFriends, getSuggestions} from "../../controllers/friendController.js";
 router.get("/", getAllFriends);
+router.get("/suggestions", getSuggestions);
 router.post("/requests", sendFriendRequest);
 router.get("/requests", getAllFriendRequest);
 router.post("/requests/:requestId", acceptFriendRequest);

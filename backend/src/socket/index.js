@@ -38,10 +38,10 @@ io.on("connection", async (socket) => {
         return sockets.values().next().value;
     };
 
-    socket.on("call-user", ({ to, offer, callerName, callerAvatar }) => {
+    socket.on("call-user", ({ to, offer, callerName, callerAvatar, callType }) => {
         const toStr = to?.toString();
         const receiverSocket = getAnySocket(toStr);
-        console.log("Receive call-user");
+        console.log("Receive call-user", { callType });
         console.log("from:", userId);
         console.log("to (raw):", to, "| to (string):", toStr);
         console.log("onlineUsers:", Array.from(onlineUsers.entries()).map(([k, v]) => [k, Array.from(v)]));
@@ -51,13 +51,15 @@ io.on("connection", async (socket) => {
                 from: user._id,
                 offer,
                 callerName,
-                callerAvatar
+                callerAvatar,
+                callType
             });
             io.to(receiverSocket).emit("incoming-call", {
                 from: user._id,
                 offer,
                 callerName,
-                callerAvatar
+                callerAvatar,
+                callType
             });
         }
     });
@@ -109,4 +111,14 @@ io.on("connection", async (socket) => {
         console.log(`${socket.id} disconnect (${onlineUsers.get(userId)?.size ?? 0} device(s) remaining)`)
     })
 })
+
+export const emitToUser = (userId, event, data) => {
+    const sockets = onlineUsers.get(userId?.toString());
+    if (sockets && sockets.size > 0) {
+        sockets.forEach(socketId => {
+            io.to(socketId).emit(event, data);
+        });
+    }
+};
+
 export { io, app, server };

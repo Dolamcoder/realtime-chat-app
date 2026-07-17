@@ -14,10 +14,12 @@ interface CallState {
   pendingOffer: any | null;
   peerConnection: RTCPeerConnection | null;
   iceCandidatesQueue: RTCIceCandidateInit[];
+  callType: "audio" | "video";
+  isCameraOn: boolean;
 
   // Actions
-  startCall: (targetUserId: string, name: string, avatar: string) => Promise<void>;
-  handleIncomingCall: (data: { from: string; offer: any; callerName: string; callerAvatar: string }) => void;
+  startCall: (targetUserId: string, name: string, avatar: string, callType: "audio" | "video") => Promise<void>;
+  handleIncomingCall: (data: { from: string; offer: any; callerName: string; callerAvatar: string; callType: "audio" | "video" }) => void;
   acceptCall: () => Promise<void>;
   rejectCall: () => void;
   handleCallAccepted: (data: { answer: any }) => Promise<void>;
@@ -27,6 +29,7 @@ interface CallState {
   endCall: () => void;
   endCallLocal: () => void;
   toggleMute: () => void;
+  toggleCamera: () => void;
   incrementDuration: () => void;
 }
 
@@ -138,16 +141,22 @@ export const useCallStore = create<CallState>((set, get) => ({
   pendingOffer: null,
   peerConnection: null,
   iceCandidatesQueue: [],
+  callType: "audio",
+  isCameraOn: false,
 
-  startCall: async (targetUserId, name, avatar) => {
+  startCall: async (targetUserId, name, avatar, callType) => {
     try {
-      console.log("Emit call-user");
+      console.log("Emit call-user", { callType });
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Trình duyệt không hỗ trợ truy cập Micro hoặc kết nối không an toàn (Yêu cầu HTTPS hoặc localhost).");
       }
       toneGenerator.startDialing();
 
-      const localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const localStream = await navigator.mediaDevices.getUserMedia(
+        callType === "video"
+          ? { audio: true, video: { width: { ideal: 1280 }, height: { ideal: 720 } } }
+          : { audio: true, video: false }
+      );
 
       const pc = new RTCPeerConnection(iceConfiguration);
 
@@ -183,6 +192,7 @@ export const useCallStore = create<CallState>((set, get) => ({
           offer,
           callerName: name, // Caller details
           callerAvatar: avatar,
+          callType,
         });
       }
 
@@ -195,6 +205,8 @@ export const useCallStore = create<CallState>((set, get) => ({
         peerConnection: pc,
         callDuration: 0,
         isMuted: false,
+        callType,
+        isCameraOn: callType === "video",
       });
     } catch (error: any) {
       console.error("Failed to start call", error);
@@ -204,7 +216,7 @@ export const useCallStore = create<CallState>((set, get) => ({
     }
   },
 
-  handleIncomingCall: ({ from, offer, callerName, callerAvatar }) => {
+  handleIncomingCall: ({ from, offer, callerName, callerAvatar, callType }) => {
     const currentCallState = get().callState;
     if (currentCallState !== "idle") {
       // Busy: automatically reject or ignore
@@ -224,11 +236,13 @@ export const useCallStore = create<CallState>((set, get) => ({
       pendingOffer: offer,
       callDuration: 0,
       isMuted: false,
+      callType,
+      isCameraOn: false,
     });
   },
 
   acceptCall: async () => {
-    const { targetUserId, pendingOffer } = get();
+    const { targetUserId, pendingOffer, callType } = get();
     if (!targetUserId || !pendingOffer) return;
 
     toneGenerator.stop();
@@ -237,7 +251,11 @@ export const useCallStore = create<CallState>((set, get) => ({
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Trình duyệt không hỗ trợ truy cập Micro hoặc kết nối không an toàn (Yêu cầu HTTPS hoặc localhost).");
       }
-      const localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const localStream = await navigator.mediaDevices.getUserMedia(
+        callType === "video"
+          ? { audio: true, video: { width: { ideal: 1280 }, height: { ideal: 720 } } }
+          : { audio: true, video: false }
+      );
 
       const pc = new RTCPeerConnection(iceConfiguration);
 
@@ -279,6 +297,7 @@ export const useCallStore = create<CallState>((set, get) => ({
         callState: "active",
         localStream,
         peerConnection: pc,
+        isCameraOn: callType === "video",
       });
 
       // Flush any queued candidates
@@ -392,6 +411,8 @@ export const useCallStore = create<CallState>((set, get) => ({
       pendingOffer: null,
       peerConnection: null,
       iceCandidatesQueue: [],
+      callType: "audio",
+      isCameraOn: false,
     });
   },
 
@@ -402,6 +423,16 @@ export const useCallStore = create<CallState>((set, get) => ({
         track.enabled = isMuted;
       });
       set({ isMuted: !isMuted });
+    }
+  },
+
+  toggleCamera: () => {
+    const { localStream, isCameraOn } = get();
+    if (localStream) {
+      localStream.getVideoTracks().forEach((track) => {
+        track.enabled = !isCameraOn;
+      });
+      set({ isCameraOn: !isCameraOn });
     }
   },
 

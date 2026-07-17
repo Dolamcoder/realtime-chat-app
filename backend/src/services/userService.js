@@ -32,3 +32,23 @@ export const getUserById = async (userId) => {
     throw e;
   }
 };
+
+export const queryUsers = async (queryStr, currentUserId) => {
+  try {
+    if (!queryStr || queryStr.trim() === "") {
+      return [];
+    }
+    return await User.find({
+      _id: { $ne: currentUserId },
+      $or: [
+        { displayName: { $regex: queryStr, $options: "i" } },
+        { username: { $regex: queryStr, $options: "i" } }
+      ]
+    })
+      .select("_id displayName username avatarUrl")
+      .limit(20)
+      .lean();
+  } catch (e) {
+    throw e;
+  }
+};

@@ -22,11 +22,11 @@ export const deleteRequest=async(requestId)=>{
 }
 export const getAllSentRequest=async(userId)=>{
     try{
-        return await FriendRequest.findOne({from:userId}).populate("from", "_id username displayName avatarUrl");
-    }catch(err){throw errr};
+        return await FriendRequest.find({from:userId}).populate("to", "_id username displayName avatarUrl");
+    }catch(err){throw err};
 }
 export const getAllSReceivedRequest=async(userId)=>{
     try{
-        return await FriendRequest.findOne({to:userId}).populate("to", "_id username displayName avatarUrl");
-    }catch(err){throw errr};
+        return await FriendRequest.find({to:userId}).populate("from", "_id username displayName avatarUrl");
+    }catch(err){throw err};
 }

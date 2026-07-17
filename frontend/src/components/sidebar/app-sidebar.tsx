@@ -80,7 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             Bạn bè
           </SidebarGroupLabel>
           <SidebarGroupAction title="Kết bạn" className="cursor-pointer">
-            <Link to="/friend-suggest" className="flex items-center gap-2">
+            <Link to="/goi-y-ket-ban" className="flex items-center gap-2">
               <UserPlus className="size-6" />
             </Link>
           </SidebarGroupAction>

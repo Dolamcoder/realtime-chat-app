@@ -6,7 +6,21 @@ import { io } from "../socket/index.js";
 export const createConversation = asyncHandler(async (req, res) => {
   const { name, memberIds } = req.body;
   const userId = req.user._id;
-  const conversation = await createGroupContversation(userId, memberIds, name);
+  let conversation;
+
+  if (!name && memberIds && memberIds.length === 1) {
+    const recipientId = memberIds[0];
+    conversation = await getConversationByUserId(userId);
+    const existing = conversation.find(c => c.type === "direct" && c.participants.some(p => p.userId?._id.toString() === recipientId));
+    if (existing) {
+      return res.status(200).json({ conversation: existing });
+    }
+    // create a new direct conversation
+    conversation = await createDirectConversation(userId, recipientId);
+  } else {
+    conversation = await createGroupContversation(userId, memberIds, name);
+  }
+
   await conversation.populate([
     { path: "participants.userId", select: "displayName avatarUrl" },
     {

@@ -31,7 +31,10 @@ function App() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/signin" element={<SighInPage />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<ChatAppPage />} />
+            <Route path="/" element={<ChatAppPage view="chat" />} />
+            <Route path="/ban-be" element={<ChatAppPage view="friends" />} />
+            <Route path="/goi-y-ket-ban" element={<ChatAppPage view="suggestions" />} />
+            <Route path="/thong-bao" element={<ChatAppPage view="notifications" />} />
           </Route>
         </Routes>
       </BrowserRouter>

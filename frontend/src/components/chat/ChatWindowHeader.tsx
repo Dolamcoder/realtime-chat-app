@@ -33,7 +33,7 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
   }
 
   return (
-    <header className="sticky top-0 z-10 px-4 py-2 flex items-center bg-background">
+    <header className="sticky top-0 z-10 px-4 py-0 flex items-center bg-background">
       <div className="flex items-center gap-2 w-full">
         <SidebarTrigger className="-ml-1 text-foreground" />
         <div className="mx-3 h-7 w-[2px] rounded-full bg-black/20 dark:bg-white/20" />{" "}
@@ -70,7 +70,17 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
               <button
                 type="button"
                 onClick={() => {
-                  toast.info("Chức năng Video Call đang phát triển");
+                  const isOnline = onlineUsers.includes(otherUser?._id ?? "");
+                  if (!isOnline) {
+                    toast.error(`${otherUser.displayName} đang ngoại tuyến. Hãy thử gọi lại sau.`);
+                    return;
+                  }
+                  useCallStore.getState().startCall(
+                    otherUser._id,
+                    otherUser.displayName || "",
+                    otherUser.avatarUrl || "",
+                    "video"
+                  );
                 }}
                 className="p-2 rounded-full hover:bg-muted text-foreground/80 hover:text-foreground transition-all duration-200"
                 title="Gọi Video"
@@ -88,7 +98,8 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
                   useCallStore.getState().startCall(
                     otherUser._id,
                     otherUser.displayName || "",
-                    otherUser.avatarUrl || ""
+                    otherUser.avatarUrl || "",
+                    "audio"
                   );
                 }}
                 className="p-2 rounded-full hover:bg-muted text-foreground/80 hover:text-foreground transition-all duration-200"

@@ -4,6 +4,7 @@ import type { SocketState } from "@/types/store";
 import { useAuthStore } from "./useAuthStore";
 import { useChatStore } from "./useChatStore";
 import { useCallStore } from "./useCallStore";
+import { useNotificationStore } from "./useNotificationStore";
 
 const socketURL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
 
@@ -21,6 +22,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         set({ socket });
         socket.on("connect", () => {
             console.log("connect socket success");
+            useNotificationStore.getState().fetchNotifications();
         });
         socket.on("online-users", (userIds) => {
             set({ onlineUsers: userIds });
@@ -69,6 +71,10 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         });
         socket.on("call-ended", () => {
             useCallStore.getState().handleCallEnded();
+        });
+        socket.on("new-notification", (data) => {
+            console.log("<<<<<new-notification>>>>>", data);
+            useNotificationStore.getState().addNotification(data);
         });
         socket.on("connect_error", (err) => {
             console.log("<<<<err>>>>", err);
