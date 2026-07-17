@@ -5,9 +5,12 @@ import ChatCard from "./ChatCard";
 import UnreadCountBadge from "./unreadCountBadge";
 import GroupChatAvatar from "./GroupChatAvatar";
 
+import { useNavigate } from "react-router";
+
 const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
   const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
+  const navigate = useNavigate();
 
   if (!user) return null;
   const lastMessage = convo.lastMessage?.content ?? "";
@@ -16,6 +19,7 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const name = convo.group?.name ?? "";
   const handleSelectConversation = async (convoId: string) => {
     setActiveConversation(convoId);
+    navigate("/");
     if (!messages[convoId]) {
       await fetchMessages(convoId);
     }

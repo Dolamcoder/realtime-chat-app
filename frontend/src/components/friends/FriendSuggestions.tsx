@@ -105,18 +105,9 @@ const FriendSuggestions = () => {
 
   return (
     <SidebarInset className="flex flex-col h-full flex-1 overflow-hidden rounded-sm shadow-md bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 px-6 py-4 border-b border-border/40 flex items-center justify-between bg-background/95 backdrop-blur-md">
+      <header className="sticky top-0 z-10 px-6 py-4 border-b border-border/40 flex items-center bg-background/95 backdrop-blur-md justify-between">
         <div className="flex items-center gap-3">
           <SidebarTrigger className="text-foreground shrink-0 md:hidden" />
-          <Link
-            to="/"
-            className="p-2 hover:bg-muted rounded-full text-foreground/80 hover:text-foreground transition-colors duration-200"
-            title="Quay lại đoạn chat"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Link>
-          <div className="mx-1 h-6 w-[1px] bg-border md:hidden" />
           <div>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               Tìm kiếm & Gợi ý kết bạn

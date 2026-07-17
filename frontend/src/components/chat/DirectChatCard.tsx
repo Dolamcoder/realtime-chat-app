@@ -8,10 +8,14 @@ import StatusBadge from "../user/StatusBadge";
 import UnreadCountBadge from "./unreadCountBadge";
 import { useSocketStore } from "@/stores/useSocketStore";
 
+import { useNavigate } from "react-router";
+
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
   const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
   const { onlineUsers } = useSocketStore();
+  const navigate = useNavigate();
+
   if (!user) return;
   const otherUser = convo.participants.find((p) => p._id !== user._id);
   if (!otherUser) return;
@@ -19,6 +23,7 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const lastMessage = convo.lastMessage?.content ?? "";
   const handleSelectConversation = async (convoId: string) => {
     setActiveConversation(convoId);
+    navigate("/");
     if (!messages[convoId]) {
       await fetchMessages(convoId);
     }
@@ -52,8 +57,8 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
           className={cn(
             "text-sm truncate",
             unreadCount > 0
-              ? "font-medium text-foreground"
-              : "text-muted-foreground",
+              ? "font-medium text-black"
+              : "text-black",
           )}
         >
           {lastMessage}
