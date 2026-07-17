@@ -57,8 +57,8 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
           className={cn(
             "text-sm truncate",
             unreadCount > 0
-              ? "font-medium text-black"
-              : "text-black",
+              ? "font-semibold text-foreground"
+              : "text-muted-foreground",
           )}
         >
           {lastMessage}

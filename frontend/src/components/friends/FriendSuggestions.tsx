@@ -280,7 +280,7 @@ const FriendSuggestions = () => {
                   setModalOpen(false);
                   setTargetUserId(null);
                 }}
-                className="flex-1 sm:flex-initial text-sm font-semibold px-5 py-2.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-foreground hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                className="flex-1 sm:flex-initial text-sm font-semibold px-5 py-2.5 rounded-xl bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-colors"
               >
                 Hủy
               </button>
@@ -292,7 +292,7 @@ const FriendSuggestions = () => {
                   setModalOpen(false);
                   setTargetUserId(null);
                 }}
-                className="flex-1 sm:flex-initial text-sm font-bold px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white shadow-lg hover:shadow-primary/20 transition-all"
+                className="flex-1 sm:flex-initial text-sm font-bold px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/20 transition-all"
               >
                 Gửi lời mời
               </button>

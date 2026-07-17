@@ -126,7 +126,7 @@ const MessageItem = ({
                       <p
                         className={cn(
                           "text-sm font-semibold truncate",
-                          message.isOwn ? "text-white" : "text-gray-900"
+                          message.isOwn ? "text-white" : "text-foreground"
                         )}
                       >
                         {message.fileName}
@@ -135,7 +135,7 @@ const MessageItem = ({
                       <p
                         className={cn(
                           "text-xs truncate",
-                          message.isOwn ? "text-white/80" : "text-gray-500"
+                          message.isOwn ? "text-white/80" : "text-muted-foreground"
                         )}
                       >
                         {message.fileType}
