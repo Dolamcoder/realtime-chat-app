@@ -32,5 +32,23 @@ export const authService = {
     const res=await api.post("/auth/refresh");
     console.log(res);
     return res.data.accessToken;
+  },
+  updateProfile: async (displayName: string, bio: string, phone: string) => {
+    const res = await api.put("/users/profile", { displayName, bio, phone });
+    return res.data;
+  },
+  updateAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const res = await api.put("/users/avatar", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  },
+  changePassword: async (oldPassword: string, newPassword: string) => {
+    const res = await api.put("/users/change-password", { oldPassword, newPassword });
+    return res.data;
   }
 };

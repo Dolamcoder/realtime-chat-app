@@ -100,6 +100,50 @@ export const useAuthStore = create<AuthState>()(
           set({ loading: false });
         }
       },
+      updateProfile: async (displayName, bio, phone) => {
+        try {
+          set({ loading: true });
+          const res = await authService.updateProfile(displayName, bio, phone);
+          set({ user: res.user });
+          toast.success("Cập nhật thông tin thành công");
+        } catch (err: any) {
+          console.error(err);
+          const msg = err?.response?.data?.message || "Lỗi khi cập nhật thông tin";
+          toast.error(msg);
+          throw err;
+        } finally {
+          set({ loading: false });
+        }
+      },
+      updateAvatar: async (file) => {
+        try {
+          set({ loading: true });
+          const res = await authService.updateAvatar(file);
+          set({ user: res.user });
+          toast.success("Cập nhật ảnh đại diện thành công");
+        } catch (err: any) {
+          console.error(err);
+          const msg = err?.response?.data?.message || "Lỗi khi cập nhật ảnh đại diện";
+          toast.error(msg);
+          throw err;
+        } finally {
+          set({ loading: false });
+        }
+      },
+      changePassword: async (oldPassword, newPassword) => {
+        try {
+          set({ loading: true });
+          await authService.changePassword(oldPassword, newPassword);
+          toast.success("Đổi mật khẩu thành công");
+        } catch (err: any) {
+          console.error(err);
+          const msg = err?.response?.data?.message || "Lỗi khi đổi mật khẩu";
+          toast.error(msg);
+          throw err;
+        } finally {
+          set({ loading: false });
+        }
+      },
     }),
     {
       name: "auth-storage",

@@ -18,6 +18,9 @@ export interface AuthState {
   signOut: () => Promise<void>;
   fetchMe: () => Promise<void>;
   refresh: () => Promise<void>;
+  updateProfile: (displayName: string, bio: string, phone: string) => Promise<void>;
+  updateAvatar: (file: File) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
 }
 export interface ThemeState {
   isDark: boolean;

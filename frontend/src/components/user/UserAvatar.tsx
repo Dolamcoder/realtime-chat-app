@@ -9,12 +9,21 @@ interface IUserAvatarProps {
 }
 
 
+const _API_URL = import.meta.env.VITE_API_BACKEND_URL || "http://localhost:3000/api/v1";
+const BASE_URL = _API_URL.replace(/\/api\/v1\/?$/, "");
+
 const UserAvatar = ({
   type,
   name = "alohub",
   avatarUrl,
   className,
 }: IUserAvatarProps) => {
+  const resolvedUrl = avatarUrl
+    ? (avatarUrl.startsWith("http") || avatarUrl.startsWith("blob") || avatarUrl.startsWith("data")
+        ? avatarUrl
+        : `${BASE_URL}${avatarUrl}`)
+    : DEFAULT_AVATAR;
+
   return (
     <Avatar
       className={cn(
@@ -25,7 +34,7 @@ const UserAvatar = ({
       )}
     >
       <AvatarImage
-        src={avatarUrl || DEFAULT_AVATAR}
+        src={resolvedUrl}
         alt={name}
       />
       <AvatarFallback>

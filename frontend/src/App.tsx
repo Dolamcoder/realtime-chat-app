@@ -35,6 +35,7 @@ function App() {
             <Route path="/ban-be" element={<ChatAppPage view="friends" />} />
             <Route path="/goi-y-ket-ban" element={<ChatAppPage view="suggestions" />} />
             <Route path="/thong-bao" element={<ChatAppPage view="notifications" />} />
+            <Route path="/tai-khoan" element={<ChatAppPage view="account" />} />
           </Route>
         </Routes>
       </BrowserRouter>

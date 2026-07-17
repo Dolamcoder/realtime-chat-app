@@ -80,7 +80,7 @@ export function NavUser({ user }: { user: User }) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem className="p-0">
-                <Link to="/" className="flex w-full items-center gap-2 px-2 py-1.5">
+                <Link to="/tai-khoan" className="flex w-full items-center gap-2 px-2 py-1.5">
                   <UserIcon className="size-4 text-muted-foreground" />
                   <span>Tài Khoản</span>
                 </Link>

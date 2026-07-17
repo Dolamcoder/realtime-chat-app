@@ -2,12 +2,13 @@ import ChatWindowLayout from "@/components/chat/ChatWindowLayout";
 import FriendsList from "@/components/friends/FriendsList";
 import FriendSuggestions from "@/components/friends/FriendSuggestions";
 import NotificationsList from "@/components/notifications/NotificationsList";
+import AccountInfo from "@/components/user/AccountInfo";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import CallOverlay from "@/components/chat/CallOverlay";
 
 interface ChatAppPageProps {
-  view?: "chat" | "friends" | "suggestions" | "notifications";
+  view?: "chat" | "friends" | "suggestions" | "notifications" | "account";
 }
 
 const ChatAppPage = ({ view = "chat" }: ChatAppPageProps) => {
@@ -19,6 +20,8 @@ const ChatAppPage = ({ view = "chat" }: ChatAppPageProps) => {
         return <FriendSuggestions />;
       case "notifications":
         return <NotificationsList />;
+      case "account":
+        return <AccountInfo />;
       case "chat":
       default:
         return <ChatWindowLayout />;
