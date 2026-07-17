@@ -59,6 +59,8 @@ export interface Message {
   updatedAt?: string | null;
   createdAt: string;
   isOwn?: boolean;
+  status?: "sending" | "error" | "success";
+  tempId?: string;
 }
 export interface MessageResponse{
   messages: Message[];

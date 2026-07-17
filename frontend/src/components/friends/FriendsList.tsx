@@ -3,7 +3,7 @@ import { useFriendStore } from "@/stores/useFriendStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { Users, UserCheck, MessageSquare, Check, X, Clock, ChevronLeft } from "lucide-react";
-import UserAvatar from "./UserAvatar";
+import UserAvatar from "../user/UserAvatar";
 import { useNavigate, Link } from "react-router";
 import api from "@/lib/axios";
 
@@ -20,7 +20,7 @@ const FriendsList = () => {
     cancelFriendRequest,
   } = useFriendStore();
 
-  const { conversations, fetchConversations, setActiveConversation } = useChatStore();
+  const { fetchConversations, setActiveConversation } = useChatStore();
   const navigate = useNavigate();
 
   // Local state to keep items in list even after store is updated
@@ -114,7 +114,7 @@ const FriendsList = () => {
 
       {/* Body Layout */}
       <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 beautiful-scrollbar">
-
+        
         {/* Column 1: Friends list */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5 border-b border-border/40 pb-2">

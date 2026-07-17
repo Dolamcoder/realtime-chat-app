@@ -1,6 +1,6 @@
 import { cn, formatMessageTime } from "@/lib/utils";
 import type { MessageItemProps, Participant } from "@/types/chat";
-import UserAvatar from "./UserAvatar";
+import UserAvatar from "../user/UserAvatar";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { FileText, Download } from "lucide-react";
@@ -148,7 +148,7 @@ const MessageItem = ({
           })()}
 
           {/* seen/ delivered */}
-          {message.isOwn && message._id === selectedConvo.lastMessage?._id && (
+          {message.isOwn && message.status !== "sending" && message.status !== "error" && message._id === selectedConvo.lastMessage?._id && (
             <Badge
               variant="outline"
               className={cn(
@@ -160,6 +160,18 @@ const MessageItem = ({
             >
               {lastMessageStatus}
             </Badge>
+          )}
+
+          {/* status (sending/error) */}
+          {message.isOwn && message.status === "sending" && (
+            <span className="text-[10px] text-muted-foreground/60 select-none animate-pulse">
+              Đang gửi...
+            </span>
+          )}
+          {message.isOwn && message.status === "error" && (
+            <span className="text-[10px] text-red-500 font-bold flex items-center gap-1 select-none" title="Gửi tin nhắn thất bại">
+              ⚠️ Gửi lỗi ❗
+            </span>
           )}
         </div>
       </div>

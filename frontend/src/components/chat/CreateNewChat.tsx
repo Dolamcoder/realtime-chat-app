@@ -10,7 +10,7 @@ import {
 import { MessageCircle, Search } from "lucide-react";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { useChatStore } from "@/stores/useChatStore";
-import UserAvatar from "./UserAvatar";
+import UserAvatar from "../user/UserAvatar";
 import api from "@/lib/axios";
 import { useNavigate } from "react-router";
 

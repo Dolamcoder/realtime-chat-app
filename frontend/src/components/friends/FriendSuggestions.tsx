@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
-import { Search, UserPlus, UserCheck, Clock, Users, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
-import UserAvatar from "./UserAvatar";
+import { Search, UserPlus, UserCheck, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import UserAvatar from "../user/UserAvatar";
 import { Link } from "react-router";
 
 const FriendSuggestions = () => {

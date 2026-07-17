@@ -3,8 +3,8 @@ import ChatCard from "./ChatCard";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { cn } from "@/lib/utils";
-import UserAvatar from "./UserAvatar";
-import StatusBadge from "./StatusBadge";
+import UserAvatar from "../user/UserAvatar";
+import StatusBadge from "../user/StatusBadge";
 import UnreadCountBadge from "./unreadCountBadge";
 import { useSocketStore } from "@/stores/useSocketStore";
 

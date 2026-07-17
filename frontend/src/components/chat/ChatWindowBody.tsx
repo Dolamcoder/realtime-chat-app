@@ -34,7 +34,7 @@ const ChatWindowBody = () => {
         <div ref={messagesEndRef} />
         {reversedMessages.map((message, index) => (
           <MessageItem
-            key={message._id ?? index}
+            key={message.tempId || message._id || index}
             message={message}
             index={index}
             messages={messages}

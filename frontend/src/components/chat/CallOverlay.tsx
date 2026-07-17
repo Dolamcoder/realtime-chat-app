@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useCallStore } from "@/stores/useCallStore";
 import { Phone, PhoneOff, Mic, MicOff, Volume2, Video, VideoOff } from "lucide-react";
-import UserAvatar from "./UserAvatar";
+import UserAvatar from "../user/UserAvatar";
 
 const CallOverlay = () => {
   const {

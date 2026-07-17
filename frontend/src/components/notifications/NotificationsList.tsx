@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
-import { Bell, UserPlus, UserCheck, MessageSquare, Trash2, CheckCheck, ChevronLeft } from "lucide-react";
-import UserAvatar from "./UserAvatar";
+import { Bell, UserPlus, UserCheck, MessageSquare, ChevronLeft } from "lucide-react";
+import UserAvatar from "../user/UserAvatar";
 import { useNavigate, Link } from "react-router";
 
 const NotificationsList = () => {
