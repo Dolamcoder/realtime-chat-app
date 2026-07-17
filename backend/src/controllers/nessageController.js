@@ -7,12 +7,9 @@ import { io } from "../socket/index.js";
 import { uploadToStorage, uploadMultipleToStorage } from "../services/storageService.js";
 
 export const sendDirectMessage = asyncHandler(async (req, res) => {
-    const { recipientId, content, voiceDuration } = req.body;
+    const { content, voiceDuration } = req.body;
     const senderId = req.user._id;
-    let conversation = await findDirectConversation(senderId, recipientId);
-    if (!conversation) {
-        conversation = await createDirectConversation(senderId, recipientId);
-    }
+    const conversation = req.conversation;
     const imgUrls = [];
     let fileUrl = null;
     let fileName = null;

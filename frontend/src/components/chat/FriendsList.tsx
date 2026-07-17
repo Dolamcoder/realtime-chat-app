@@ -5,6 +5,7 @@ import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { Users, UserCheck, MessageSquare, Check, X, Clock, ChevronLeft } from "lucide-react";
 import UserAvatar from "./UserAvatar";
 import { useNavigate, Link } from "react-router";
+import api from "@/lib/axios";
 
 const FriendsList = () => {
   const {
@@ -19,7 +20,7 @@ const FriendsList = () => {
     cancelFriendRequest,
   } = useFriendStore();
 
-  const { conversations, setActiveConversation } = useChatStore();
+  const { conversations, fetchConversations, setActiveConversation } = useChatStore();
   const navigate = useNavigate();
 
   // Local state to keep items in list even after store is updated
@@ -48,14 +49,26 @@ const FriendsList = () => {
     });
   }, [sentRequests]);
 
-  const handleStartChat = (friendId: string) => {
-    const existingConvo = conversations.find(
-      (c) => c.type === "direct" && c.participants.some((p) => p._id === friendId)
-    );
-    if (existingConvo) {
-      setActiveConversation(existingConvo._id);
+  const handleStartChat = async (friendId: string) => {
+    try {
+      const res = await api.post("/conversations", { memberIds: [friendId] });
+      const convo = res.data.conversation;
+      
+      // Update local state directly so there is no delay
+      useChatStore.setState((state) => {
+        const exists = state.conversations.some((c) => c._id === convo._id);
+        if (exists) return state;
+        return { conversations: [convo, ...state.conversations] };
+      });
+      
+      setActiveConversation(convo._id);
+      navigate("/");
+      
+      // Sync list in background
+      fetchConversations();
+    } catch (err) {
+      console.error("Lỗi khi bắt đầu cuộc trò chuyện:", err);
     }
-    navigate("/");
   };
 
   const handleAccept = async (reqId: string) => {
@@ -101,7 +114,7 @@ const FriendsList = () => {
 
       {/* Body Layout */}
       <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 beautiful-scrollbar">
-        
+
         {/* Column 1: Friends list */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5 border-b border-border/40 pb-2">

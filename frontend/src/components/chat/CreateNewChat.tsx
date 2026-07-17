@@ -31,19 +31,28 @@ const CreateNewChat = () => {
     try {
       const res = await api.post("/conversations", { memberIds: [friendId] });
       const convo = res.data.conversation;
-      await fetchConversations();
+      
+      // Update local state directly so there is no delay
+      useChatStore.setState((state) => {
+        const exists = state.conversations.some((c) => c._id === convo._id);
+        if (exists) return state;
+        return { conversations: [convo, ...state.conversations] };
+      });
+
       setActiveConversation(convo._id);
       setOpen(false);
       navigate("/");
+      
+      // Sync list in background
+      fetchConversations();
     } catch (err) {
       console.error(err);
     }
   };
 
   const filteredFriends = friends.filter((friend) => {
-    // Exclude friends who already have a direct conversation
     const hasConvo = conversations.some(
-      (c) => c.type === "direct" && c.participants.some((p) => p._id === friend._id)
+      (c) => c.type === "direct" && c.participants.some((p) => p?._id === friend._id)
     );
     if (hasConvo) return false;
 

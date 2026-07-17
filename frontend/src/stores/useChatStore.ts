@@ -74,20 +74,41 @@ export const useChatStore = create<ChatState>()(
           set({ messageLoading: false });
         }
       },
-      sendDirectMessage: async (recipientId, content, images = [], file = null, voice = null, voiceDuration = null) => {
+      sendDirectMessage: async (conversationId, content, images = [], file = null, voice = null, voiceDuration = null) => {
         try {
           const { activeConversationId } = get();
-          await chatService.sendDirectMessage(
-            recipientId,
+          const newMsg = await chatService.sendDirectMessage(
+            conversationId,
             content,
             images,
             file,
             voice,
             voiceDuration,
           );
+          if (newMsg) {
+            await get().addMessage(newMsg);
+          }
           set((state) => ({
             conversations: state.conversations.map((c) =>
-              c._id === activeConversationId ? { ...c, seenBy: [] } : c,
+              c._id === activeConversationId
+                ? {
+                  ...c,
+                  seenBy: [],
+                  lastMessage: newMsg
+                    ? {
+                      _id: newMsg._id,
+                      content: newMsg.content || (newMsg.imgUrls?.length ? "[Hình ảnh]" : newMsg.fileUrl ? "[Tệp tin]" : ""),
+                      createdAt: newMsg.createdAt,
+                      sender: {
+                        _id: newMsg.senderId,
+                        displayName: "",
+                        avatarUrl: null,
+                      },
+                    }
+                    : c.lastMessage,
+                  lastMessageAt: newMsg ? newMsg.createdAt : c.lastMessageAt,
+                }
+                : c,
             ),
           }));
         } catch (err) {
@@ -97,10 +118,31 @@ export const useChatStore = create<ChatState>()(
       sendGroupMessage: async (conversationId, content, images = [], file = null, voice = null, voiceDuration = null) => {
         try {
           const { activeConversationId } = get();
-          await chatService.sendGroupMessage(content, conversationId, images, file, voice, voiceDuration);
+          const newMsg = await chatService.sendGroupMessage(content, conversationId, images, file, voice, voiceDuration);
+          if (newMsg) {
+            await get().addMessage(newMsg);
+          }
           set((state) => ({
             conversations: state.conversations.map((c) =>
-              c._id === activeConversationId ? { ...c, seenBy: [] } : c,
+              c._id === activeConversationId
+                ? {
+                  ...c,
+                  seenBy: [],
+                  lastMessage: newMsg
+                    ? {
+                      _id: newMsg._id,
+                      content: newMsg.content || (newMsg.imgUrls?.length ? "[Hình ảnh]" : newMsg.fileUrl ? "[Tệp tin]" : ""),
+                      createdAt: newMsg.createdAt,
+                      sender: {
+                        _id: newMsg.senderId,
+                        displayName: "",
+                        avatarUrl: null,
+                      },
+                    }
+                    : c.lastMessage,
+                  lastMessageAt: newMsg ? newMsg.createdAt : c.lastMessageAt,
+                }
+                : c,
             ),
           }));
         } catch (err) {
@@ -138,7 +180,6 @@ export const useChatStore = create<ChatState>()(
         }
       },
       updateConversation: (conversation) => {
-        console.log("debug update conversation");
         set((state) => ({
           conversations: state.conversations.map((c) => c._id === conversation._id ? { ...c, ...conversation } : c),
         }))
@@ -150,13 +191,13 @@ export const useChatStore = create<ChatState>()(
             conversations: state.conversations.map((c) =>
               c._id === conversationId
                 ? {
-                    ...c,
-                    seenBy: res.seenBy || [],
-                    unreadCounts: {
-                      ...c.unreadCounts,
-                      [useAuthStore.getState().user?._id ?? ""]: 0,
-                    },
-                  }
+                  ...c,
+                  seenBy: res.seenBy || [],
+                  unreadCounts: {
+                    ...c.unreadCounts,
+                    [useAuthStore.getState().user?._id ?? ""]: 0,
+                  },
+                }
                 : c
             ),
           }));

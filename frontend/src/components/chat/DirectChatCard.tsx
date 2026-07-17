@@ -12,8 +12,6 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
   const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
   const { onlineUsers } = useSocketStore();
-  console.log("convo", convo)
-  console.log("check online User", onlineUsers);
   if (!user) return;
   const otherUser = convo.participants.find((p) => p._id !== user._id);
   if (!otherUser) return;

@@ -138,9 +138,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
     setRecordingDuration(0);
 
     if (selectedConvo.type === "direct") {
-      const participants = selectedConvo.participants;
-      const otherUser = participants.filter((p) => p._id !== user._id)[0];
-      await sendDirectMessage(otherUser._id, messageContent, imagesToSend, fileToSend, voiceFile, durationToSend);
+      await sendDirectMessage(selectedConvo._id, messageContent, imagesToSend, fileToSend, voiceFile, durationToSend);
     }
     else {
       await sendGroupMessage(selectedConvo._id, messageContent, imagesToSend, fileToSend, voiceFile, durationToSend);

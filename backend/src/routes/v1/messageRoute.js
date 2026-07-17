@@ -13,6 +13,6 @@ const uploadFields = upload.fields([
   { name: "voice", maxCount: 1 },
 ]);
 
-router.post("/direct", uploadFields, checkFriendship, sendDirectMessage);
+router.post("/direct", uploadFields, checkGroupMembership, sendDirectMessage);
 router.post("/group", uploadFields, checkGroupMembership, sendGroupMessage);
 export default router;

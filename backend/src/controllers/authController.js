@@ -1,7 +1,7 @@
 import { checkUsername, checkEmail, hashPassword, checkPassword, createAccessToken } from '../services/authService.js';
 import { createUser, getUserByUsername } from '../services/userService.js'
 import { asyncHandler } from '../utils/asyncHandle.js';
-import { saveRefreshToken, createRefreshToken, verifyRefreshToken } from '../services/sessionService.js';
+import { saveRefreshToken, createRefreshToken, deleteRefreshToken, verifyRefreshToken } from '../services/sessionService.js';
 
 export const register = asyncHandler(async (req, res) => {
   const { username, email, password, firstname, lastname } = req.body;

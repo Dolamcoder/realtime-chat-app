@@ -28,6 +28,13 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             set({ onlineUsers: userIds });
         });
         socket.on("new-message", ({ message, conversation, unreadCounts }) => {
+            const currentUserId = useAuthStore.getState().user?._id;
+            const isOwn = message.senderId === currentUserId;
+
+            // Nếu là tin nhắn của chính mình, giao diện đã được cập nhật ngay lập tức từ trước.
+            // Chỉ xử lý tin nhắn nhận được từ người khác.
+            if (isOwn) return;
+
             const { addMessage, updateConversation, activeConversationId, markSeen } = useChatStore.getState();
             addMessage(message);
             const lastMessage = {
@@ -47,8 +54,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             };
             updateConversation(updatedConversation);
 
-            const currentUserId = useAuthStore.getState().user?._id;
-            if (message.conversationId === activeConversationId && message.senderId !== currentUserId) {
+            if (message.conversationId === activeConversationId) {
                 markSeen(message.conversationId);
             }
         });

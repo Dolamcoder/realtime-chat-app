@@ -1,4 +1,4 @@
-import { createGroupContversation, getConversationByUserId, updateMarkAsSeen, getConversationById } from "../services/conversationService.js";
+import { createGroupContversation, createDirectConversation, getConversationByUserId, updateMarkAsSeen, getConversationById } from "../services/conversationService.js";
 import { getMessagesPage } from "../services/messageService.js";
 import { asyncHandler } from '../utils/asyncHandle.js';
 import { readMessage } from "../socket/messageSocket.js";

@@ -10,6 +10,7 @@ interface FriendStore {
   searchResults: any[];
   suggestionsPage: number;
   suggestionsTotalPages: number;
+  loading: boolean;
 
   fetchFriends: () => Promise<void>;
   fetchSuggestions: (page?: number, limit?: number) => Promise<void>;

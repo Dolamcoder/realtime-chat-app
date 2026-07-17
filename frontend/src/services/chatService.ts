@@ -15,7 +15,7 @@ export const chatService = {
     return { messages: res.data.messages, cursor: res.data.nextCursor };
   },
   async sendDirectMessage(
-    recipientId: string,
+    conversationId: string,
     content: string = "",
     images: File[] = [],
     file: File | null = null,
@@ -23,7 +23,7 @@ export const chatService = {
     voiceDuration: number | null = null
   ) {
     const formData = new FormData();
-    formData.append("recipientId", recipientId);
+    formData.append("conversationId", conversationId);
     formData.append("content", content);
     if (images && images.length > 0) {
       images.forEach((image) => {

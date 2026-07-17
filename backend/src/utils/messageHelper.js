@@ -14,30 +14,32 @@ export const updateConversationAfterCreateMessage = (conversation, message, send
         }
     }
 
-    const update = {
-        $set: {
-            seenBy: [],
-            lastMessageAt: message.createdAt,
-            lastMessage: {
-                _id: message._id,
-                content: previewContent,
-                senderId,
-                createdAt: message.createdAt,
-            },
-        },
-        $inc: {},
+    conversation.seenBy = [];
+    conversation.lastMessageAt = message.createdAt;
+    conversation.lastMessage = {
+        _id: message._id.toString(),
+        content: previewContent,
+        senderId,
+        createdAt: message.createdAt,
     };
+
+    if (!conversation.unreadCounts) {
+        conversation.unreadCounts = new Map();
+    }
 
     conversation.participants.forEach((p) => {
         const memberId = p.userId.toString();
         const isSender = memberId === senderId.toString();
 
         if (isSender) {
-            update.$set[`unreadCounts.${memberId}`] = 0;
+            conversation.unreadCounts.set(memberId, 0);
         } else {
-            update.$inc[`unreadCounts.${memberId}`] = 1;
+            const currentCount = conversation.unreadCounts.get(memberId) || 0;
+            conversation.unreadCounts.set(memberId, currentCount + 1);
         }
     });
 
-    return update;
+    conversation.markModified("lastMessage");
+    conversation.markModified("unreadCounts");
+    conversation.markModified("seenBy");
 };
