@@ -37,14 +37,14 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
   }
 
   return (
-    <header className="sticky top-0 z-10 px-4 py-0 flex items-center bg-background">
-      <div className="flex items-center gap-2 w-full">
-        <SidebarTrigger className="-ml-1 text-foreground" />
-        <div className="mx-3 h-7 w-[2px] rounded-full bg-black/20 dark:bg-white/20" />{" "}
-        <div className="p-2 w-full flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-10 px-2 py-0 flex items-center bg-background border-b border-border/20">
+      <div className="flex items-center gap-1 w-full">
+        <SidebarTrigger className="-ml-1 text-foreground shrink-0" />
+        <div className="mx-1 h-7 w-[1px] rounded-full bg-black/10 dark:bg-white/10 shrink-0" />{" "}
+        <div className="p-1 w-full flex items-center justify-between overflow-hidden">
+          <div className="flex items-center gap-1.5 sm:gap-3 overflow-hidden shrink-0">
             {/* avatar */}
-            <div className="relative">
+            <div className="relative shrink-0">
               {chat.type === "direct" ? (
                 <>
                   <UserAvatar
@@ -63,8 +63,14 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
               )}
             </div>
 
-            {/* name */}
-            <h2 className="font-semibold text-foreground">
+            {/* name - giới hạn động: chat thường 18 ký tự (max-w-[180px]), nhóm 10 ký tự (max-w-[100px]) */}
+            <h2 
+              className={cn(
+                "font-semibold text-foreground truncate sm:max-w-[200px] md:max-w-xs",
+                chat.type === "direct" ? "max-w-[180px]" : "max-w-[100px]"
+              )} 
+              title={chat.type === "direct" ? otherUser?.displayName : chat.group?.name}
+            >
               {chat.type === "direct" ? otherUser?.displayName : chat.group?.name}
             </h2>
           </div>

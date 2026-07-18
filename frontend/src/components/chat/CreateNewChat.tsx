@@ -13,12 +13,14 @@ import { useChatStore } from "@/stores/useChatStore";
 import UserAvatar from "../user/UserAvatar";
 import api from "@/lib/axios";
 import { useNavigate } from "react-router";
+import { useSidebar } from "../ui/sidebar";
 
 const CreateNewChat = () => {
   const { friends, fetchFriends } = useFriendStore();
   const { conversations, fetchConversations, setActiveConversation } = useChatStore();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { isMobile, setOpenMobile } = useSidebar();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +44,9 @@ const CreateNewChat = () => {
       setActiveConversation(convo._id);
       setOpen(false);
       navigate("/");
+      if (isMobile) {
+        setOpenMobile(false);
+      }
       
       // Sync list in background
       fetchConversations();

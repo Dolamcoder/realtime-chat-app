@@ -9,9 +9,10 @@ interface GroupChatAvatarProps {
 }
 
 const GroupChatAvatar = ({ participants, type }: GroupChatAvatarProps) => {
+  const limit = 2;
   const displayedParticipants = React.useMemo(() => {
-    if (participants.length > 3) {
-      return [...participants].sort(() => 0.5 - Math.random()).slice(0, 3);
+    if (participants.length > limit) {
+      return [...participants].slice(0, limit);
     }
     return participants;
   }, [participants]);
@@ -29,9 +30,9 @@ const GroupChatAvatar = ({ participants, type }: GroupChatAvatarProps) => {
     <div className="relative flex -space-x-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:ring-2">
       {avatars}
 
-      {participants.length > 3 && (
-        <div className="flex items-center z-10 justify-center size-8 rounded-full bg-muted ring-2 ring-background text-muted-foreground">
-          <Ellipsis className="size-4" />
+      {participants.length > limit && (
+        <div className="flex items-center z-10 justify-center size-8 rounded-full bg-primary/10 ring-2 ring-background text-primary font-bold text-xs select-none">
+          +{participants.length - limit}
         </div>
       )}
     </div>

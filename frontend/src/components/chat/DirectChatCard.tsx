@@ -10,10 +10,13 @@ import { useSocketStore } from "@/stores/useSocketStore";
 
 import { useNavigate } from "react-router";
 
+import { useSidebar } from "../ui/sidebar";
+
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
   const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen, clearConversation } = useChatStore();
   const { onlineUsers } = useSocketStore();
+  const { isMobile, setOpenMobile } = useSidebar();
   const navigate = useNavigate();
 
   if (!user) return;
@@ -24,6 +27,9 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const handleSelectConversation = async (convoId: string) => {
     setActiveConversation(convoId);
     navigate("/");
+    if (isMobile) {
+      setOpenMobile(false);
+    }
     if (!messages[convoId]) {
       await fetchMessages(convoId);
     }

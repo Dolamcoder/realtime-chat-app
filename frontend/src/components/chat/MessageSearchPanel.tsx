@@ -48,7 +48,7 @@ const MessageSearchPanel = () => {
   }, [query]);
 
   return (
-    <div className="w-80 h-full border-l border-border/40 bg-background flex flex-col overflow-hidden shrink-0">
+    <div className="fixed inset-y-0 right-0 z-50 md:relative w-full sm:w-80 md:w-72 h-full border-l border-border/40 bg-background flex flex-col overflow-hidden shrink-0 shadow-lg md:shadow-none">
       {/* Header */}
       <div className="p-4 border-b border-border/40 flex items-center justify-between">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
