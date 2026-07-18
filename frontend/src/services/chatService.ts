@@ -90,5 +90,9 @@ export const chatService = {
   async deleteGroup(conversationId: string) {
     const res = await api.delete(`/conversations/${conversationId}`);
     return res.data;
+  },
+  async createGroupConversation(name: string, memberIds: string[]) {
+    const res = await api.post("/conversations", { name, memberIds });
+    return res.data;
   }
 };

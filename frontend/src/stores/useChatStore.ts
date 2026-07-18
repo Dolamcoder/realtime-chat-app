@@ -368,18 +368,40 @@ export const useChatStore = create<ChatState>()(
         try {
           await chatService.deleteGroup(conversationId);
           set((state) => {
-            const updatedConversations = state.conversations.filter((c) => c._id !== conversationId);
-            const updatedMessages = { ...state.messages };
-            delete updatedMessages[conversationId];
+            const updatedConversations = state.conversations.map((c) => {
+              if (c._id === conversationId) {
+                return { ...c, isDeleted: true };
+              }
+              return c;
+            });
 
             return {
               conversations: updatedConversations,
-              messages: updatedMessages,
-              activeConversationId: state.activeConversationId === conversationId ? null : state.activeConversationId,
             };
           });
         } catch (err) {
           console.error("Lỗi khi xóa nhóm", err);
+        }
+      },
+      createGroupConversation: async (name: string, memberIds: string[]) => {
+        try {
+          const res = await chatService.createGroupConversation(name, memberIds);
+          if (res.conversation) {
+            set((state) => {
+              const exists = state.conversations.some((c) => c._id === res.conversation._id);
+              if (exists) {
+                return {
+                  activeConversationId: res.conversation._id,
+                };
+              }
+              return {
+                conversations: [res.conversation, ...state.conversations],
+                activeConversationId: res.conversation._id,
+              };
+            });
+          }
+        } catch (err) {
+          console.error("Lỗi khi tạo nhóm chat", err);
         }
       }
     }),

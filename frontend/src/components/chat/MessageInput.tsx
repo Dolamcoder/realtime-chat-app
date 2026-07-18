@@ -192,122 +192,128 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
         </div>
       )}
 
-      <div className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 min-h-[52px]">
-        {/* Hidden inputs */}
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleImageChange}
-          className="hidden"
-        />
-        <input
-          type="file"
-          ref={docInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-        />
+      {selectedConvo.isDeleted ? (
+        <div className="flex items-center justify-center p-4 bg-muted/40 text-muted-foreground text-sm font-semibold text-center select-none w-full min-h-[52px]">
+          Không thể gửi tin nhắn. Nhóm này đã bị giải tán bởi trưởng nhóm.
+        </div>
+      ) : (
+        <div className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 min-h-[52px]">
+          {/* Hidden inputs */}
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          <input
+            type="file"
+            ref={docInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
 
-        {isRecording ? (
-          /* Recording controls */
-          <div className="flex items-center justify-between w-full bg-red-50/50 dark:bg-red-950/20 border border-red-200/50 rounded-lg p-1.5 px-3">
-            <div className="flex items-center gap-2">
-              <span className="size-2 bg-red-500 rounded-full animate-ping" />
-              <span className="text-xs font-semibold text-red-500">Đang ghi âm ({formatDuration(recordingDuration)})</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={cancelRecording}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs px-2 h-7"
-              >
-                Hủy
-              </Button>
-              <Button
-                size="sm"
-                onClick={stopRecording}
-                className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 h-7 gap-1"
-              >
-                <Square className="size-3 fill-current" /> Dừng
-              </Button>
-            </div>
-          </div>
-        ) : (
-          /* Normal controls */
-          <>
-            <div className="flex items-center gap-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => fileInputRef.current?.click()}
-                className="hover:bg-primary/10 transition-smooth size-8 sm:size-9"
-                disabled={!!selectedFile || !!voiceBlob}
-              >
-                <ImagePlus className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => docInputRef.current?.click()}
-                className="hover:bg-primary/10 transition-smooth size-8 sm:size-9"
-                disabled={selectedImages.length > 0 || !!voiceBlob}
-              >
-                <Paperclip className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={startRecording}
-                className="hover:bg-primary/10 transition-smooth text-primary-glow size-8 sm:size-9"
-                disabled={selectedImages.length > 0 || !!selectedFile || !!voiceBlob}
-              >
-                <Mic className="size-4" />
-              </Button>
-            </div>
-
-            <div className="flex-1 relative">
-              <Input
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Soạn tin nhắn..."
-                className="pr-20 h-9 bg-white border-border/50 focus:border-primary/50 transition-smooth resize-none"
-                disabled={!!voiceBlob}
-              ></Input>
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+          {isRecording ? (
+            /* Recording controls */
+            <div className="flex items-center justify-between w-full bg-red-50/50 dark:bg-red-950/20 border border-red-200/50 rounded-lg p-1.5 px-3">
+              <div className="flex items-center gap-2">
+                <span className="size-2 bg-red-500 rounded-full animate-ping" />
+                <span className="text-xs font-semibold text-red-500">Đang ghi âm ({formatDuration(recordingDuration)})</span>
+              </div>
+              <div className="flex items-center gap-1">
                 <Button
-                  asChild
                   variant="ghost"
-                  size="icon"
-                  className="size-8 hover:bg-primary/10 transition-smooth"
-                  disabled={!!voiceBlob}
+                  size="sm"
+                  onClick={cancelRecording}
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs px-2 h-7"
                 >
-                  <div>
-                    <EmojiPicker
-                      onChange={(emoji: string) => setValue(`${value}${emoji}`)}
-                    />
-                  </div>
+                  Hủy
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={stopRecording}
+                  className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 h-7 gap-1"
+                >
+                  <Square className="size-3 fill-current" /> Dừng
                 </Button>
               </div>
             </div>
+          ) : (
+            /* Normal controls */
+            <>
+              <div className="flex items-center gap-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="hover:bg-primary/10 transition-smooth size-8 sm:size-9"
+                  disabled={!!selectedFile || !!voiceBlob}
+                >
+                  <ImagePlus className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => docInputRef.current?.click()}
+                  className="hover:bg-primary/10 transition-smooth size-8 sm:size-9"
+                  disabled={selectedImages.length > 0 || !!voiceBlob}
+                >
+                  <Paperclip className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={startRecording}
+                  className="hover:bg-primary/10 transition-smooth text-primary-glow size-8 sm:size-9"
+                  disabled={selectedImages.length > 0 || !!selectedFile || !!voiceBlob}
+                >
+                  <Mic className="size-4" />
+                </Button>
+              </div>
 
-            <Button
-              onClick={sendMessage}
-              className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105"
-              disabled={
-                !value.trim() &&
-                selectedImages.length === 0 &&
-                !selectedFile &&
-                !voiceBlob
-              }
-            >
-              <Send className="size-4 text-white" />
-            </Button>
-          </>
-        )}
-      </div>
+              <div className="flex-1 relative">
+                <Input
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Soạn tin nhắn..."
+                  className="pr-20 h-9 bg-white border-border/50 focus:border-primary/50 transition-smooth resize-none"
+                  disabled={!!voiceBlob}
+                ></Input>
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 hover:bg-primary/10 transition-smooth"
+                    disabled={!!voiceBlob}
+                  >
+                    <div>
+                      <EmojiPicker
+                        onChange={(emoji: string) => setValue(`${value}${emoji}`)}
+                      />
+                    </div>
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                onClick={sendMessage}
+                className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105"
+                disabled={
+                  !value.trim() &&
+                  selectedImages.length === 0 &&
+                  !selectedFile &&
+                  !voiceBlob
+                }
+              >
+                <Send className="size-4 text-white" />
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

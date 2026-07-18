@@ -51,6 +51,10 @@ export const sendGroupMessage = asyncHandler(async (req, res) => {
     const senderId = req.user._id;
     const conversation = req.conversation;
 
+    if (conversation && conversation.isDeleted) {
+        return res.status(400).json({ message: "Không thể gửi tin nhắn. Nhóm này đã bị giải tán." });
+    }
+
     const imgUrls = [];
     let fileUrl = null;
     let fileName = null;

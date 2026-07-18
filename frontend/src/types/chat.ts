@@ -39,6 +39,7 @@ export interface Conversation {
   unreadCounts: Record<string, number>; // key = userId, value = unread count
   createdAt: string;
   updatedAt: string;
+  isDeleted?: boolean;
 }
 
 export interface ConversationResponse {

@@ -70,6 +70,10 @@ const conversationSchema=new mongoose.Schema({
         type: Map,
         of: Number,
         default:{},
+    },
+    isDeleted:{
+        type: Boolean,
+        default: false
     }
 })
 conversationSchema.index({"participants.userId":1, lastMessageAt: -1});

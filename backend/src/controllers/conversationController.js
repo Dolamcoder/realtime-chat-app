@@ -4,6 +4,7 @@ import { asyncHandler } from '../utils/asyncHandle.js';
 import { readMessage } from "../socket/messageSocket.js";
 import { io, emitToUser } from "../socket/index.js";
 import Message from "../models/Message.js";
+import { Conversation } from "../models/Conversation.js";
 export const createConversation = asyncHandler(async (req, res) => {
   const { name, memberIds } = req.body;
   const userId = req.user._id;
@@ -224,17 +225,12 @@ export const deleteGroup = asyncHandler(async (req, res) => {
     return res.status(403).json({ message: "Chỉ trưởng nhóm mới có quyền xóa nhóm" });
   }
 
-  // Xóa tin nhắn thuộc nhóm
-  await Message.deleteMany({ conversationId });
-  // Xóa cuộc trò chuyện nhóm
-  await Conversation.findByIdAndDelete(conversationId);
+  // Đánh dấu nhóm đã bị xóa thay vì xóa hoàn toàn
+  conversation.isDeleted = true;
+  await conversation.save();
 
-  // Gửi thông báo qua socket cho các thành viên khác
-  conversation.participants.forEach((p) => {
-    if (p.userId) {
-      emitToUser(p.userId.toString(), "group-deleted", { conversationId });
-    }
-  });
+  // Gửi thông báo qua socket cho cả phòng conversationId
+  io.to(conversationId).emit("group-deleted", { conversationId });
 
   return res.status(200).json({ message: "Xóa nhóm thành công", conversationId });
 });

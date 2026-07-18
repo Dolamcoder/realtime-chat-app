@@ -82,17 +82,31 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             console.log("<<<<<new-notification>>>>>", data);
             useNotificationStore.getState().addNotification(data);
         });
+        socket.on("group-deleted", ({ conversationId }) => {
+            useChatStore.setState((state) => {
+                const updatedConversations = state.conversations.map((c) => {
+                    if (c._id === conversationId) {
+                        return { ...c, isDeleted: true };
+                    }
+                    return c;
+                });
+                // Nếu đang mở đúng cuộc trò chuyện bị giải tán, cập nhật lại trạng thái hiển thị
+                return {
+                    conversations: updatedConversations,
+                };
+            });
+        });
         socket.on("new-conversation", ({ conversation, conversationId }) => {
             // Join room mới ngay lập tức để nhận tin nhắn realtime
             socket.emit("join-conversation", { conversationId });
             // Thêm conversation vào store nếu chưa có (dành cho người nhận)
-            const { conversations } = useChatStore.getState();
-            const exists = conversations.some((c) => c._id === conversation._id);
-            if (!exists) {
-                useChatStore.setState((state) => ({
+            useChatStore.setState((state) => {
+                const exists = state.conversations.some((c) => c._id === conversation._id);
+                if (exists) return state;
+                return {
                     conversations: [conversation, ...state.conversations],
-                }));
-            }
+                };
+            });
         });
         socket.on("connect_error", (err) => {
             console.log("<<<<err>>>>", err);
