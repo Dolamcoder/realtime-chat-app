@@ -51,6 +51,7 @@ export const createGroupContversation = async (userId, memberIds, name) => {
       participants: [{ userId }, ...memberIds.map((id) => ({ userId: id }))],
       group: {
         name,
+        createBy: userId,
         createdBy: userId,
       },
       lastMessageAt: new Date(),

@@ -308,6 +308,79 @@ export const useChatStore = create<ChatState>()(
         } catch (err) {
           console.error(err);
         }
+      },
+      clearConversation: async (conversationId: string) => {
+        try {
+          const res = await chatService.clearConversation(conversationId);
+          set((state) => {
+            const { user } = useAuthStore.getState();
+            if (!user) return state;
+
+            const updatedConversations = state.conversations.map((c) => {
+              if (c._id === conversationId) {
+                const participants = c.participants.map((p) => {
+                  if (p._id === user._id) {
+                    return { ...p, clearedAt: res.clearedAt || new Date().toISOString() };
+                  }
+                  return p;
+                });
+
+                let lastMessage = c.lastMessage;
+                if (lastMessage) {
+                  lastMessage = {
+                    ...lastMessage,
+                    content: "Dữ liệu cũ đã bị xóa",
+                  };
+                }
+
+                return {
+                  ...c,
+                  participants,
+                  lastMessage,
+                  unreadCounts: {
+                    ...c.unreadCounts,
+                    [user._id]: 0,
+                  },
+                };
+              }
+              return c;
+            });
+
+            const updatedMessages = { ...state.messages };
+            if (updatedMessages[conversationId]) {
+              updatedMessages[conversationId] = {
+                items: [],
+                hasMore: false,
+                nextCursor: null,
+              };
+            }
+
+            return {
+              conversations: updatedConversations,
+              messages: updatedMessages,
+            };
+          });
+        } catch (err) {
+          console.error("Lỗi khi xóa lịch sử trò chuyện", err);
+        }
+      },
+      deleteGroup: async (conversationId: string) => {
+        try {
+          await chatService.deleteGroup(conversationId);
+          set((state) => {
+            const updatedConversations = state.conversations.filter((c) => c._id !== conversationId);
+            const updatedMessages = { ...state.messages };
+            delete updatedMessages[conversationId];
+
+            return {
+              conversations: updatedConversations,
+              messages: updatedMessages,
+              activeConversationId: state.activeConversationId === conversationId ? null : state.activeConversationId,
+            };
+          });
+        } catch (err) {
+          console.error("Lỗi khi xóa nhóm", err);
+        }
       }
     }),
     {

@@ -8,6 +8,10 @@ const participantSchema=new mongoose.Schema({
     joinAt: {
         type: Date,
         default: Date.now
+    },
+    clearedAt: {
+        type: Date,
+        default: null
     }
 }, {_id: false});
 const groupSchema=new mongoose.Schema({
@@ -15,6 +19,10 @@ const groupSchema=new mongoose.Schema({
         type: String,
     },
     createBy:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+    createdBy:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }

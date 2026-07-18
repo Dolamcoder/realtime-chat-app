@@ -115,3 +115,40 @@ Không cần thêm event mới — logic WebRTC giống hệt voice call, chỉ 
 - Gọi audio từ header ← vẫn hoạt động bình thường (không ảnh hưởng)
 - Từ chối cuộc gọi video → state reset đúng
 - Đang gọi mà người kia gọi vào → auto reject (đã có logic)
+
+---
+
+## f. Xử lý clearedAt (Xóa lịch sử trò chuyện)
+
+### Mục tiêu
+Nếu người dùng đã xóa lịch sử trò chuyện (có `clearedAt` trên participant), ta cần ẩn các tin nhắn cũ hơn thời điểm xóa và hiển thị tin nhắn cuối cùng (lastMessage) dưới dạng thông báo dữ liệu cũ đã bị xóa.
+
+### Backend
+
+#### [MODIFY] [Conversation.js](file:///d:/project-nodejs/Chat-App/backend/src/models/Conversation.js)
+- Thêm trường `clearedAt` vào `participantSchema`:
+  ```javascript
+  clearedAt: {
+      type: Date,
+      default: null
+  }
+  ```
+
+#### [MODIFY] [conversationController.js](file:///d:/project-nodejs/Chat-App/backend/src/controllers/conversationController.js)
+- **Trong `getConversations` và `createConversation`**:
+  - Tìm participant tương ứng với `userId` hiện tại.
+  - Nếu participant có `clearedAt`:
+    - Định dạng trường `participants` trả về bao gồm cả `clearedAt`.
+    - Kiểm tra `lastMessage`: nếu `lastMessage.createdAt` nhỏ hơn hoặc bằng `clearedAt`, ta thay đổi `lastMessage.content` thành `"Dữ liệu cũ đã bị xóa"` (hoặc `"Tin nhắn cũ đã bị xóa"`) và thiết lập các trường media khác thành `null`.
+- **Trong `getMessages`**:
+  - Lấy thông tin cuộc hội thoại để tìm `clearedAt` của user hiện tại.
+  - Nếu `clearedAt` tồn tại, bổ sung điều kiện truy vấn tin nhắn: `createdAt: { $gt: clearedAt }`.
+
+### Frontend
+
+#### [MODIFY] [chat.ts](file:///d:/project-nodejs/Chat-App/frontend/src/types/chat.ts)
+- Cập nhật interface `Participant` để có thêm trường `clearedAt?: string | null;`.
+
+#### [MODIFY] [DirectChatCard.tsx](file:///d:/project-nodejs/Chat-App/frontend/src/components/chat/DirectChatCard.tsx) & [GroupChatCard.tsx](file:///d:/project-nodejs/Chat-App/frontend/src/components/chat/GroupChatCard.tsx)
+- Hiển thị tin nhắn cuối với phong cách thông báo hệ thống hoặc chữ in nghiêng nếu nội dung tin nhắn cuối trùng với thông báo xóa dữ liệu.
+

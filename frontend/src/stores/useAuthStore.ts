@@ -5,6 +5,8 @@ import type { AuthState } from "@/types/store";
 import { persist } from "zustand/middleware";
 import { useChatStore } from "./useChatStore";
 
+let refreshPromise: Promise<any> | null = null;
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -84,21 +86,34 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       refresh: async () => {
-        try {
-          set({ loading: true });
-          const accessToken = await authService.refresh();
-          const { user, fetchMe, setAccessToken } = get();
-          setAccessToken(accessToken);
-          if (!user) {
-            await fetchMe();
-          }
-        } catch (err) {
-          console.error(err);
-          toast.error("Hết phiên đăng nhập! vui lòng đăng nhập lại");
-          get().clearState();
-        } finally {
-          set({ loading: false });
+        if (refreshPromise) {
+          return refreshPromise;
         }
+
+        refreshPromise = (async () => {
+          try {
+            set({ loading: true });
+            const accessToken = await authService.refresh();
+            const { user, fetchMe, setAccessToken } = get();
+            setAccessToken(accessToken);
+            if (!user) {
+              await fetchMe();
+            }
+            return accessToken;
+          } catch (err) {
+            console.error(err);
+            if (get().user) {
+              toast.error("Hết phiên đăng nhập! vui lòng đăng nhập lại");
+            }
+            get().clearState();
+            throw err;
+          } finally {
+            set({ loading: false });
+            refreshPromise = null;
+          }
+        })();
+
+        return refreshPromise;
       },
       updateProfile: async (displayName, bio, phone) => {
         try {

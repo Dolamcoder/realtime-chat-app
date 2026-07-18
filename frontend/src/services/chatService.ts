@@ -82,5 +82,13 @@ export const chatService = {
     const res = await api.patch(`/conversations/${conversationId}/seen`);
     console.log("<<<<<<<<<<<updateSeenfe", res.data)
     return res.data;
+  },
+  async clearConversation(conversationId: string) {
+    const res = await api.patch(`/conversations/${conversationId}/clear`);
+    return res.data;
+  },
+  async deleteGroup(conversationId: string) {
+    const res = await api.delete(`/conversations/${conversationId}`);
+    return res.data;
   }
 };

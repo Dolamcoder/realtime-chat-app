@@ -12,7 +12,7 @@ import { useNavigate } from "react-router";
 
 const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
+  const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen, clearConversation } = useChatStore();
   const { onlineUsers } = useSocketStore();
   const navigate = useNavigate();
 
@@ -41,6 +41,7 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
       }
       isActive={activeConversationId === convo._id}
       onSelect={handleSelectConversation}
+      onClearHistory={() => clearConversation(convo._id)}
       leftSection={
         <>
           <UserAvatar
@@ -59,6 +60,7 @@ const DirectMessageCard = ({ convo }: { convo: Conversation }) => {
             unreadCount > 0
               ? "font-semibold text-foreground"
               : "text-muted-foreground",
+            lastMessage === "Dữ liệu cũ đã bị xóa" && "italic text-xs opacity-75"
           )}
         >
           {lastMessage}

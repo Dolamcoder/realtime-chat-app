@@ -3,6 +3,7 @@ import { getMessagesPage } from "../services/messageService.js";
 import { asyncHandler } from '../utils/asyncHandle.js';
 import { readMessage } from "../socket/messageSocket.js";
 import { io, emitToUser } from "../socket/index.js";
+import Message from "../models/Message.js";
 export const createConversation = asyncHandler(async (req, res) => {
   const { name, memberIds } = req.body;
   const userId = req.user._id;
@@ -34,9 +35,21 @@ export const createConversation = asyncHandler(async (req, res) => {
     displayName: p.userId?.displayName,
     avatarUrl: p.userId?.avatarUrl ?? null,
     joinedAt: p.joinedAt,
+    clearedAt: p.clearedAt ?? null,
   }));
 
-  const formatted = { ...conversation.toObject(), participants };
+  const myParticipant = conversation.participants.find(p => p.userId?._id.toString() === userId.toString());
+  const myClearedAt = myParticipant?.clearedAt;
+
+  let lastMessage = conversation.lastMessage ? conversation.lastMessage.toObject() : null;
+  if (lastMessage && myClearedAt && new Date(lastMessage.createdAt) <= new Date(myClearedAt)) {
+    lastMessage = {
+      ...lastMessage,
+      content: "Dữ liệu cũ đã bị xóa",
+    };
+  }
+
+  const formatted = { ...conversation.toObject(), participants, lastMessage };
 
   // Notify all participants so they can join the new socket room
   const conversationId = conversation._id.toString();
@@ -59,12 +72,25 @@ export const getConversations = asyncHandler(async (req, res) => {
       displayName: p.userId?.displayName,
       avatarUrl: p.userId?.avatarUrl ?? null,
       joinedAt: p.joinedAt,
+      clearedAt: p.clearedAt ?? null,
     }));
+
+    const myParticipant = convo.participants.find(p => p.userId?._id.toString() === userId.toString());
+    const myClearedAt = myParticipant?.clearedAt;
+
+    let lastMessage = convo.lastMessage ? convo.lastMessage.toObject() : null;
+    if (lastMessage && myClearedAt && new Date(lastMessage.createdAt) <= new Date(myClearedAt)) {
+      lastMessage = {
+        ...lastMessage,
+        content: "Dữ liệu cũ đã bị xóa",
+      };
+    }
 
     return {
       ...convo.toObject(),
       unreadCounts: convo.unreadCounts || {},
       participants,
+      lastMessage,
     };
   });
   return res.status(200).json({ conversations: formatted });
@@ -73,10 +99,32 @@ export const getConversations = asyncHandler(async (req, res) => {
 export const getMessages = asyncHandler(async (req, res) => {
   const { conversationId } = req.params;
   const { limit = 50, cursor } = req.query;
+  const userId = req.user._id;
+
+  const conversation = await getConversationById(conversationId);
+  const myParticipant = conversation.participants.find(p => p.userId.toString() === userId.toString());
+  const myClearedAt = myParticipant?.clearedAt;
+
   const query = { conversationId };
-  if (cursor) {
-    query.createdAt = { $lt: new Date(cursor) };
+  if (myClearedAt) {
+    query.createdAt = { $gt: new Date(myClearedAt) };
   }
+
+  if (cursor) {
+    const cursorDate = new Date(cursor);
+    if (myClearedAt && cursorDate <= new Date(myClearedAt)) {
+      return res.status(200).json({
+        messages: [],
+        nextCursor: null,
+      });
+    }
+    if (query.createdAt) {
+      query.createdAt = { ...query.createdAt, $lt: cursorDate };
+    } else {
+      query.createdAt = { $lt: cursorDate };
+    }
+  }
+
   let messages = await getMessagesPage(query, limit);
   let nextCursor = null;
   if (messages.length > Number(limit)) {
@@ -139,3 +187,54 @@ export const markAsSeen = async (req, res) => {
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
+
+export const clearConversation = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+  const userId = req.user._id.toString();
+
+  const conversation = await getConversationById(conversationId);
+  
+  // Cập nhật clearedAt của participant tương ứng với user hiện tại
+  const participant = conversation.participants.find(p => p.userId.toString() === userId);
+  if (!participant) {
+    return res.status(403).json({ message: "Bạn không tham gia cuộc trò chuyện này" });
+  }
+  
+  participant.clearedAt = new Date();
+  await conversation.save();
+
+  return res.status(200).json({ message: "Xóa lịch sử trò chuyện thành công", clearedAt: participant.clearedAt });
+});
+
+export const deleteGroup = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+  const userId = req.user._id.toString();
+
+  const conversation = await getConversationById(conversationId);
+  if (!conversation) {
+    return res.status(404).json({ message: "Không tìm thấy cuộc trò chuyện" });
+  }
+
+  if (conversation.type !== "group") {
+    return res.status(400).json({ message: "Cuộc trò chuyện này không phải là nhóm" });
+  }
+
+  const creatorId = conversation.group?.createdBy?.toString() || conversation.group?.createBy?.toString();
+  if (creatorId !== userId) {
+    return res.status(403).json({ message: "Chỉ trưởng nhóm mới có quyền xóa nhóm" });
+  }
+
+  // Xóa tin nhắn thuộc nhóm
+  await Message.deleteMany({ conversationId });
+  // Xóa cuộc trò chuyện nhóm
+  await Conversation.findByIdAndDelete(conversationId);
+
+  // Gửi thông báo qua socket cho các thành viên khác
+  conversation.participants.forEach((p) => {
+    if (p.userId) {
+      emitToUser(p.userId.toString(), "group-deleted", { conversationId });
+    }
+  });
+
+  return res.status(200).json({ message: "Xóa nhóm thành công", conversationId });
+});

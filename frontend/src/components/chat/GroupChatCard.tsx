@@ -4,12 +4,13 @@ import type { Conversation } from "@/types/chat";
 import ChatCard from "./ChatCard";
 import UnreadCountBadge from "./unreadCountBadge";
 import GroupChatAvatar from "./GroupChatAvatar";
+import { cn } from "@/lib/utils";
 
 import { useNavigate } from "react-router";
 
 const GroupChatCard = ({ convo }: { convo: Conversation }) => {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen } = useChatStore();
+  const { activeConversationId, setActiveConversation, messages, fetchMessages, markSeen, clearConversation, deleteGroup } = useChatStore();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -17,6 +18,10 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
 
   const unreadCount = convo.unreadCounts[user._id];
   const name = convo.group?.name ?? "";
+  const isCreator = !convo.group?.createdBy && !convo.group?.createBy
+    ? true // Fallback cho nhóm cũ chưa lưu thông tin người tạo để hiển thị nút Gỡ nhóm
+    : convo.group?.createdBy === user._id || convo.group?.createBy === user._id;
+
   const handleSelectConversation = async (convoId: string) => {
     setActiveConversation(convoId);
     navigate("/");
@@ -38,6 +43,8 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
       isActive={activeConversationId === convo._id}
       onSelect={handleSelectConversation}
       unreadCount={unreadCount}
+      onClearHistory={() => clearConversation(convo._id)}
+      onDeleteGroup={isCreator ? () => deleteGroup(convo._id) : undefined}
       leftSection={
         <>
           <>
@@ -50,7 +57,12 @@ const GroupChatCard = ({ convo }: { convo: Conversation }) => {
         </>
       }
       subtitle={
-        <p className="text-sm truncate text-muted-foreground">
+        <p
+          className={cn(
+            "text-sm truncate text-muted-foreground",
+            lastMessage === "Dữ liệu cũ đã bị xóa" && "italic text-xs opacity-75"
+          )}
+        >
           {lastMessage ? lastMessage : convo.participants.map(p => p.displayName).join(", ")}
         </p>
       }
