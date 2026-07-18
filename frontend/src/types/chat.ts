@@ -50,8 +50,9 @@ export interface ConversationResponse {
 export interface Message {
   _id: string;
   conversationId: string;
-  senderId: string;
+  senderId?: string | null;
   content: string | null;
+  isSystem?: boolean;
   imgUrl?: string | null;
   imgUrls?: string[];
   fileUrl?: string | null;

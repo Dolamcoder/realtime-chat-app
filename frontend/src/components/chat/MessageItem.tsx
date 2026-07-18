@@ -31,6 +31,18 @@ const MessageItem = ({
     (p: Participant) => p?._id?.toString() === message?.senderId?.toString(),
   );
 
+  if (message.isSystem) {
+    return (
+      <div className="flex items-center justify-center my-3 w-full gap-3 px-4 select-none">
+        <div className="h-[1px] bg-border/40 flex-1 opacity-20" />
+        <span className="text-[12px] bg-muted/50 text-muted-foreground px-3 py-1.5 rounded-full font-semibold border border-border/30 shadow-sm text-center">
+          {message.content}
+        </span>
+        <div className="h-[1px] bg-border/40 flex-1 opacity-20" />
+      </div>
+    );
+  }
+
   return (
     <>
       <div

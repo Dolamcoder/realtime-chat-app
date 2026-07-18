@@ -9,11 +9,14 @@ const messageSchema=new mongoose.Schema({
     senderId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-        required:true,
     },
     content:{
         type:String,
-        trime:true
+        trim:true
+    },
+    isSystem:{
+        type:Boolean,
+        default:false
     },
     imgUrl:{
         type:String

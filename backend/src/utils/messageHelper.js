@@ -29,7 +29,7 @@ export const updateConversationAfterCreateMessage = (conversation, message, send
 
     conversation.participants.forEach((p) => {
         const memberId = p.userId.toString();
-        const isSender = memberId === senderId.toString();
+        const isSender = senderId ? memberId === senderId.toString() : false;
 
         if (isSender) {
             conversation.unreadCounts.set(memberId, 0);

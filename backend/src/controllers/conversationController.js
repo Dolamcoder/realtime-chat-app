@@ -3,8 +3,11 @@ import { getMessagesPage } from "../services/messageService.js";
 import { asyncHandler } from '../utils/asyncHandle.js';
 import { readMessage } from "../socket/messageSocket.js";
 import { io, emitToUser } from "../socket/index.js";
+import { emitNewMessage } from "../socket/messageSocket.js";
 import Message from "../models/Message.js";
 import { Conversation } from "../models/Conversation.js";
+import { updateConversationAfterCreateMessage } from "../utils/messageHelper.js";
+import { User } from "../models/User.js";
 export const createConversation = asyncHandler(async (req, res) => {
   const { name, memberIds } = req.body;
   const userId = req.user._id;
@@ -262,7 +265,23 @@ export const addMembers = asyncHandler(async (req, res) => {
     conversation.removedUsers = conversation.removedUsers.filter(rId => rId.toString() !== id);
   });
 
+  // Tạo tin nhắn hệ thống thông báo thêm thành viên
+  const adderName = req.user.displayName;
+  const addedUsers = await User.find({ _id: { $in: newMemberIds } }).select("displayName");
+  const addedNames = addedUsers.map(u => u.displayName).join(", ");
+  const content = `${adderName} đã thêm ${addedNames} vào nhóm.`;
+
+  const systemMessage = await Message.create({
+    conversationId,
+    content,
+    isSystem: true
+  });
+
+  updateConversationAfterCreateMessage(conversation, systemMessage, null);
   await conversation.save();
+
+  // Phát tin nhắn hệ thống realtime cho cả nhóm
+  emitNewMessage(io, conversation, systemMessage);
 
   await conversation.populate([
     { path: "participants.userId", select: "displayName avatarUrl" },
@@ -313,8 +332,27 @@ export const removeMember = asyncHandler(async (req, res) => {
   if (!conversation.removedUsers.some(rId => rId.toString() === memberId)) {
     conversation.removedUsers.push(memberId);
   }
+
+  // Tạo tin nhắn hệ thống thông báo xóa thành viên hoặc thành viên rời nhóm
+  const removerName = req.user.displayName;
+  const removedUser = await User.findById(memberId).select("displayName");
+  const removedName = removedUser ? removedUser.displayName : "Thành viên";
   
+  const content = memberId === userId
+    ? `${removedName} đã rời khỏi nhóm.`
+    : `${removerName} đã xóa ${removedName} khỏi nhóm.`;
+
+  const systemMessage = await Message.create({
+    conversationId,
+    content,
+    isSystem: true
+  });
+
+  updateConversationAfterCreateMessage(conversation, systemMessage, null);
   await conversation.save();
+
+  // Phát tin nhắn hệ thống realtime cho cả nhóm
+  emitNewMessage(io, conversation, systemMessage);
 
   await conversation.populate([
     { path: "participants.userId", select: "displayName avatarUrl" },
