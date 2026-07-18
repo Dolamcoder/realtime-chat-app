@@ -113,6 +113,44 @@ export const useSocketStore = create<SocketState>((set, get) => ({
                 };
             });
         });
+        socket.on("message-recalled", ({ messageId, conversationId, lastMessage }) => {
+            useChatStore.setState((state) => {
+                const convoMessages = state.messages[conversationId]?.items || [];
+                const updatedItems = convoMessages.map((m) =>
+                    m._id === messageId
+                        ? {
+                              ...m,
+                              content: "Tin nhắn đã bị thu hồi",
+                              isRecalled: true,
+                              imgUrls: [],
+                              fileUrl: null,
+                              fileName: null,
+                              fileType: null,
+                              voiceUrl: null,
+                              voiceDuration: null,
+                          }
+                        : m
+                );
+
+                const updatedConversations = state.conversations.map((c) => {
+                    if (c._id === conversationId && lastMessage) {
+                        return { ...c, lastMessage };
+                    }
+                    return c;
+                });
+
+                return {
+                    messages: {
+                        ...state.messages,
+                        [conversationId]: {
+                            ...state.messages[conversationId],
+                            items: updatedItems,
+                        },
+                    },
+                    conversations: updatedConversations,
+                };
+            });
+        });
         socket.on("new-conversation", ({ conversation, conversationId }) => {
             // Join room mới ngay lập tức để nhận tin nhắn realtime
             socket.emit("join-conversation", { conversationId });

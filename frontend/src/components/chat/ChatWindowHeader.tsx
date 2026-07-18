@@ -6,13 +6,14 @@ import UserAvatar from "../user/UserAvatar";
 import StatusBadge from "../user/StatusBadge";
 import GroupChatAvatar from "./GroupChatAvatar";
 import { useSocketStore } from "@/stores/useSocketStore";
-import { Phone, Video } from "lucide-react";
+import { Phone, Video, Search } from "lucide-react";
 import { useCallStore } from "@/stores/useCallStore";
 import { toast } from "sonner";
 import GroupMembersModal from "./GroupMembersModal";
+import { cn } from "@/lib/utils";
 
 const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
-  const { conversations, activeConversationId } = useChatStore();
+  const { conversations, activeConversationId, showSearch, setShowSearch } = useChatStore();
   const { onlineUsers } = useSocketStore();
   const { user } = useAuthStore();
   let otherUser;
@@ -72,6 +73,17 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
             <div className="flex items-center gap-1">
               <button
                 type="button"
+                onClick={() => setShowSearch(!showSearch)}
+                className={cn(
+                  "p-2 rounded-full hover:bg-muted text-foreground/80 hover:text-foreground transition-all duration-200",
+                  showSearch && "bg-primary/10 text-primary"
+                )}
+                title="Tìm kiếm tin nhắn"
+              >
+                <Search className="w-5 h-5 text-primary" />
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const isOnline = onlineUsers.includes(otherUser?._id ?? "");
                   if (!isOnline) {
@@ -116,6 +128,17 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
               <div className="flex items-center gap-1">
                 {!isRemoved && (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => setShowSearch(!showSearch)}
+                      className={cn(
+                        "p-2 rounded-full hover:bg-muted text-foreground/80 hover:text-foreground transition-all duration-200",
+                        showSearch && "bg-primary/10 text-primary"
+                      )}
+                      title="Tìm kiếm tin nhắn"
+                    >
+                      <Search className="w-5 h-5 text-primary" />
+                    </button>
                     <button
                       type="button"
                       onClick={() => toast.info("Tính năng cuộc gọi nhóm đang được phát triển")}

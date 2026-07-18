@@ -3,7 +3,8 @@ import type { MessageItemProps, Participant } from "@/types/chat";
 import UserAvatar from "../user/UserAvatar";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, Undo2 } from "lucide-react";
+import { useChatStore } from "@/stores/useChatStore";
 
 const _API_URL = import.meta.env.VITE_API_BACKEND_URL || "http://localhost:3000/api/v1";
 const BASE_URL = _API_URL.replace(/\/api\/v1\/?$/, "");
@@ -15,6 +16,7 @@ const MessageItem = ({
   selectedConvo,
   lastMessageStatus,
 }: MessageItemProps) => {
+  const { recallMessage } = useChatStore();
   const check = message.isOwn && message._id === selectedConvo.lastMessage?._id;
   console.log("<<<<<check ", check)
   console.log("<<<<status", message);
@@ -47,7 +49,7 @@ const MessageItem = ({
     <>
       <div
         className={cn(
-          "flex gap-2 message-bounce mt-1",
+          "flex gap-2 message-bounce mt-1 group/msg",
           message.isOwn ? "justify-end" : "justify-start",
         )}
       >
@@ -70,31 +72,56 @@ const MessageItem = ({
             message.isOwn ? "items-end" : "items-start",
           )}
         >
-          {(() => {
+          {message.isRecalled ? (
+            <Card
+              className={cn(
+                "p-3 text-sm italic select-none border-border/40",
+                message.isOwn
+                  ? "chat-bubble-sent text-white/60 border-0"
+                  : "chat-bubble-received text-muted-foreground/60"
+              )}
+            >
+              Tin nhắn đã bị thu hồi
+            </Card>
+          ) : (() => {
             const hasMedia = !!(message.voiceUrl || message.fileUrl || (message.imgUrls && message.imgUrls.length > 0));
             const hasContent = !!message.content;
             const needsBubble = hasContent || message.fileUrl;
 
             return (
-              <Card
-                className={cn(
-                  // Padding: có content hoặc file thì p-3, chỉ có image thì p-0, voice thì p-2
-                  hasContent || message.fileUrl ? "p-3"
-                    : message.voiceUrl ? "p-2"
-                      : "p-0 bg-transparent border-0 shadow-none",
-                  // Bubble color
-                  message.isOwn && needsBubble
-                    ? "chat-bubble-sent border-0"
-                    : needsBubble
-                      ? "chat-bubble-received"
-                      : message.isOwn && message.voiceUrl
-                        ? "bg-primary/10 border border-primary/20"
-                        : message.voiceUrl
-                          ? "bg-muted/60 border border-border/40"
-                          : "",
+              <div className={cn("flex items-center gap-2 group/action w-full", message.isOwn ? "justify-end" : "justify-start")}>
+                {message.isOwn && (
+                  <button
+                    onClick={() => {
+                      if (confirm("Bạn có chắc chắn muốn thu hồi tin nhắn này?")) {
+                        recallMessage(message._id);
+                      }
+                    }}
+                    className="opacity-0 group-hover/msg:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-destructive shrink-0"
+                    title="Thu hồi tin nhắn"
+                  >
+                    <Undo2 className="size-3.5" />
+                  </button>
                 )}
-              >
-                {message.content && (
+                <Card
+                  className={cn(
+                    // Padding: có content hoặc file thì p-3, chỉ có image thì p-0, voice thì p-2
+                    hasContent || message.fileUrl ? "p-3"
+                      : message.voiceUrl ? "p-2"
+                        : "p-0 bg-transparent border-0 shadow-none",
+                    // Bubble color
+                    message.isOwn && needsBubble
+                      ? "chat-bubble-sent border-0"
+                      : needsBubble
+                        ? "chat-bubble-received"
+                        : message.isOwn && message.voiceUrl
+                          ? "bg-primary/10 border border-primary/20"
+                          : message.voiceUrl
+                            ? "bg-muted/60 border border-border/40"
+                            : "",
+                  )}
+                >
+                  {message.content && (
                   <p className="text-sm leading-relaxed break-words">
                     {message.content}
                   </p>
@@ -183,6 +210,7 @@ const MessageItem = ({
                   </div>
                 )}
               </Card>
+            </div>
             );
           })()}
 

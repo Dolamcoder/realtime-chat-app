@@ -5,27 +5,34 @@ import { SidebarInset } from "../ui/sidebar";
 import ChatWindowHeader from "./ChatWindowHeader";
 import ChatWindowBody from "./ChatWindowBody";
 import MessageInput from "./MessageInput";
+import MessageSearchPanel from "./MessageSearchPanel";
 
 const ChatWindowLayout = () => {
   const {
     activeConversationId,
     conversations,
     messageLoading: loading,
+    showSearch,
+    messages,
   } = useChatStore();
   const selectedConvo =
     conversations.find((c) => c._id === activeConversationId) ?? null;
   if (!selectedConvo) {
     return <ChatWelcomeScreen />;
   }
-  if (loading) return <ChatWindowSkeleton />;
+  const hasMessages = messages[selectedConvo._id]?.items?.length > 0;
+  if (loading && !hasMessages) return <ChatWindowSkeleton />;
   return (
-    <SidebarInset className="flex flex-col h-full flex-1 overflow-hidden rounded-sm shadow-md">
-      <ChatWindowHeader chat={selectedConvo} />
-      {/* Body */}
-      <div className="flex-1 overflow-y-auto bg-primary-foreground">
-        <ChatWindowBody />
+    <SidebarInset className="flex h-full flex-1 overflow-hidden rounded-sm shadow-md">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <ChatWindowHeader chat={selectedConvo} />
+        {/* Body */}
+        <div className="flex-1 bg-primary-foreground overflow-hidden flex flex-col">
+          <ChatWindowBody />
+        </div>
+        <MessageInput selectedConvo={selectedConvo} />
       </div>
-      <MessageInput selectedConvo={selectedConvo} />
+      {showSearch && <MessageSearchPanel />}
     </SidebarInset>
   );
 };

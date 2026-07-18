@@ -102,5 +102,13 @@ export const chatService = {
   async deleteGroupMember(conversationId: string, memberId: string) {
     const res = await api.delete(`/conversations/${conversationId}/members/${memberId}`);
     return res.data;
+  },
+  async recallMessage(messageId: string) {
+    const res = await api.patch(`/messages/${messageId}/recall`);
+    return res.data;
+  },
+  async searchMessages(conversationId: string, query: string) {
+    const res = await api.get(`/messages/conversations/${conversationId}/search`, { params: { query } });
+    return res.data;
   }
 };

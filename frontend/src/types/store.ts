@@ -54,6 +54,9 @@ export interface ChatState {
   createGroupConversation: (name: string, memberIds: string[]) => Promise<void>;
   addMembers: (conversationId: string, memberIds: string[]) => Promise<void>;
   removeMember: (conversationId: string, memberId: string) => Promise<void>;
+  recallMessage: (messageId: string) => Promise<void>;
+  showSearch: boolean;
+  setShowSearch: (show: boolean) => void;
 }
 export interface SocketState {
   socket: Socket | null;

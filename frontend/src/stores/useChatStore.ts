@@ -11,7 +11,9 @@ export const useChatStore = create<ChatState>()(
       activeConversationId: null,
       loading: false,
       messageLoading: false,
-      setActiveConversation: (id) => set({ activeConversationId: id }),
+      showSearch: false,
+      setShowSearch: (show) => set({ showSearch: show }),
+      setActiveConversation: (id) => set({ activeConversationId: id, showSearch: false }),
       reset: () => {
         set({
           conversations: [],
@@ -430,6 +432,46 @@ export const useChatStore = create<ChatState>()(
           }
         } catch (err) {
           console.error("Lỗi khi xóa thành viên", err);
+        }
+      },
+      recallMessage: async (messageId: string) => {
+        try {
+          const res = await chatService.recallMessage(messageId);
+          if (res.message) {
+            set((state) => {
+              const convoId = res.message.conversationId;
+              const convoMessages = state.messages[convoId]?.items || [];
+              const updatedItems = convoMessages.map((m) =>
+                m._id === messageId ? { ...m, ...res.message } : m
+              );
+
+              const updatedConversations = state.conversations.map((c) => {
+                if (c._id === convoId && c.lastMessage && c.lastMessage._id === messageId) {
+                  return {
+                    ...c,
+                    lastMessage: {
+                      ...c.lastMessage,
+                      content: "Tin nhắn đã bị thu hồi",
+                    },
+                  };
+                }
+                return c;
+              });
+
+              return {
+                messages: {
+                  ...state.messages,
+                  [convoId]: {
+                    ...state.messages[convoId],
+                    items: updatedItems,
+                  },
+                },
+                conversations: updatedConversations,
+              };
+            });
+          }
+        } catch (err) {
+          console.error("Lỗi khi thu hồi tin nhắn", err);
         }
       }
     }),
