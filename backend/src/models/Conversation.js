@@ -74,7 +74,11 @@ const conversationSchema=new mongoose.Schema({
     isDeleted:{
         type: Boolean,
         default: false
-    }
+    },
+    removedUsers:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }]
 })
 conversationSchema.index({"participants.userId":1, lastMessageAt: -1});
 export const Conversation=mongoose.model("Conversation", conversationSchema);

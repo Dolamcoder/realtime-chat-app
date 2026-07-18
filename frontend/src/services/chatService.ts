@@ -94,5 +94,13 @@ export const chatService = {
   async createGroupConversation(name: string, memberIds: string[]) {
     const res = await api.post("/conversations", { name, memberIds });
     return res.data;
+  },
+  async addMembers(conversationId: string, memberIds: string[]) {
+    const res = await api.post(`/conversations/${conversationId}/members`, { memberIds });
+    return res.data;
+  },
+  async deleteGroupMember(conversationId: string, memberId: string) {
+    const res = await api.delete(`/conversations/${conversationId}/members/${memberId}`);
+    return res.data;
   }
 };

@@ -9,6 +9,7 @@ import { useSocketStore } from "@/stores/useSocketStore";
 import { Phone, Video } from "lucide-react";
 import { useCallStore } from "@/stores/useCallStore";
 import { toast } from "sonner";
+import GroupMembersModal from "./GroupMembersModal";
 
 const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
   const { conversations, activeConversationId } = useChatStore();
@@ -16,6 +17,8 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
   const { user } = useAuthStore();
   let otherUser;
   chat = chat ?? conversations.find((c) => c._id === activeConversationId);
+
+  const isRemoved = chat?.removedUsers?.includes(user?._id ?? "");
 
   if (!chat) {
     return (
@@ -65,7 +68,7 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
             </h2>
           </div>
 
-          {chat.type === "direct" && otherUser && (
+          {chat.type === "direct" && otherUser ? (
             <div className="flex items-center gap-1">
               <button
                 type="button"
@@ -108,6 +111,32 @@ const ChatWindowHeader = ({ chat }: { chat?: Conversation }) => {
                 <Phone className="w-5 h-5 text-primary" />
               </button>
             </div>
+          ) : (
+            chat.type === "group" && (
+              <div className="flex items-center gap-1">
+                {!isRemoved && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => toast.info("Tính năng cuộc gọi nhóm đang được phát triển")}
+                      className="p-2 rounded-full hover:bg-muted text-foreground/80 hover:text-foreground transition-all duration-200"
+                      title="Gọi Video Nhóm"
+                    >
+                      <Video className="w-5 h-5 text-primary" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toast.info("Tính năng cuộc gọi nhóm đang được phát triển")}
+                      className="p-2 rounded-full hover:bg-muted text-foreground/80 hover:text-foreground transition-all duration-200"
+                      title="Gọi thường Nhóm"
+                    >
+                      <Phone className="w-5 h-5 text-primary" />
+                    </button>
+                    <GroupMembersModal chat={chat} />
+                  </>
+                )}
+              </div>
+            )
           )}
         </div>
       </div>

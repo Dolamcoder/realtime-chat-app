@@ -27,7 +27,10 @@ export const getConversationById = async (conversationId) => {
 export const getConversationByUserId = async (userId) => {
   try {
     return await Conversation.find({
-      "participants.userId": userId,
+      $or: [
+        { "participants.userId": userId },
+        { "removedUsers": userId }
+      ]
     })
       .sort({ lastMessageAt: -1, updatedAt: -1 })
       .populate({

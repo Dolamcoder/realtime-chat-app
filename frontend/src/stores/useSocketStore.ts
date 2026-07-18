@@ -96,6 +96,23 @@ export const useSocketStore = create<SocketState>((set, get) => ({
                 };
             });
         });
+        socket.on("group-updated", ({ conversation }) => {
+            const { updateConversation } = useChatStore.getState();
+            updateConversation(conversation);
+        });
+        socket.on("group-removed", ({ conversationId }) => {
+            const { activeConversationId } = useChatStore.getState();
+            useChatStore.setState((state) => {
+                const updatedConversations = state.conversations.filter((c) => c._id !== conversationId);
+                const updatedMessages = { ...state.messages };
+                delete updatedMessages[conversationId];
+                return {
+                    conversations: updatedConversations,
+                    messages: updatedMessages,
+                    activeConversationId: activeConversationId === conversationId ? null : activeConversationId,
+                };
+            });
+        });
         socket.on("new-conversation", ({ conversation, conversationId }) => {
             // Join room mới ngay lập tức để nhận tin nhắn realtime
             socket.emit("join-conversation", { conversationId });

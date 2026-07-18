@@ -403,6 +403,34 @@ export const useChatStore = create<ChatState>()(
         } catch (err) {
           console.error("Lỗi khi tạo nhóm chat", err);
         }
+      },
+      addMembers: async (conversationId: string, memberIds: string[]) => {
+        try {
+          const res = await chatService.addMembers(conversationId, memberIds);
+          if (res.conversation) {
+            set((state) => ({
+              conversations: state.conversations.map((c) =>
+                c._id === conversationId ? res.conversation : c
+              ),
+            }));
+          }
+        } catch (err) {
+          console.error("Lỗi khi thêm thành viên", err);
+        }
+      },
+      removeMember: async (conversationId: string, memberId: string) => {
+        try {
+          const res = await chatService.deleteGroupMember(conversationId, memberId);
+          if (res.conversation) {
+            set((state) => ({
+              conversations: state.conversations.map((c) =>
+                c._id === conversationId ? res.conversation : c
+              ),
+            }));
+          }
+        } catch (err) {
+          console.error("Lỗi khi xóa thành viên", err);
+        }
       }
     }),
     {

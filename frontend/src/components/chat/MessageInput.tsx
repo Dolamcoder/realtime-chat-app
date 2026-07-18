@@ -32,6 +32,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
 
   if (!user) return;
   const { sendDirectMessage, sendGroupMessage } = useChatStore();
+  const isRemoved = selectedConvo.removedUsers?.includes(user._id);
 
   const handleKeyDown = async (
     e: React.KeyboardEvent<HTMLInputElement>
@@ -192,7 +193,11 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
         </div>
       )}
 
-      {selectedConvo.isDeleted ? (
+      {isRemoved ? (
+        <div className="flex items-center justify-center p-4 bg-muted/40 text-destructive font-semibold text-center select-none w-full min-h-[52px]">
+          Bạn đã bị xóa khỏi cuộc trò chuyện.
+        </div>
+      ) : selectedConvo.isDeleted ? (
         <div className="flex items-center justify-center p-4 bg-muted/40 text-muted-foreground text-sm font-semibold text-center select-none w-full min-h-[52px]">
           Không thể gửi tin nhắn. Nhóm này đã bị giải tán bởi trưởng nhóm.
         </div>

@@ -40,6 +40,7 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string;
   isDeleted?: boolean;
+  removedUsers?: string[];
 }
 
 export interface ConversationResponse {

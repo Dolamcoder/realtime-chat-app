@@ -234,3 +234,109 @@ export const deleteGroup = asyncHandler(async (req, res) => {
 
   return res.status(200).json({ message: "Xóa nhóm thành công", conversationId });
 });
+
+export const addMembers = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+  const { memberIds } = req.body;
+  const userId = req.user._id.toString();
+
+  const conversation = await getConversationById(conversationId);
+  if (!conversation) {
+    return res.status(404).json({ message: "Không tìm thấy cuộc trò chuyện" });
+  }
+
+  if (conversation.type !== "group") {
+    return res.status(400).json({ message: "Cuộc trò chuyện này không phải là nhóm" });
+  }
+
+  const existingMemberIds = conversation.participants.map(p => p.userId.toString());
+  const newMemberIds = memberIds.filter(id => !existingMemberIds.includes(id));
+
+  if (newMemberIds.length === 0) {
+    return res.status(400).json({ message: "Các thành viên đều đã có trong nhóm" });
+  }
+
+  newMemberIds.forEach(id => {
+    conversation.participants.push({ userId: id, joinAt: new Date() });
+    // Nếu họ từng bị xóa, loại họ ra khỏi danh sách removedUsers
+    conversation.removedUsers = conversation.removedUsers.filter(rId => rId.toString() !== id);
+  });
+
+  await conversation.save();
+
+  await conversation.populate([
+    { path: "participants.userId", select: "displayName avatarUrl" },
+    { path: "lastMessage.senderId", select: "displayName avatarUrl" },
+  ]);
+
+  const participants = (conversation.participants || []).map((p) => ({
+    _id: p.userId?._id || p.userId,
+    displayName: p.userId?.displayName || "",
+    avatarUrl: p.userId?.avatarUrl ?? null,
+    joinedAt: p.joinedAt,
+    clearedAt: p.clearedAt ?? null,
+  }));
+
+  const lastMessage = conversation.lastMessage ? conversation.lastMessage.toObject() : null;
+  const formatted = { ...conversation.toObject(), participants, lastMessage };
+
+  newMemberIds.forEach(id => {
+    emitToUser(id, "new-conversation", { conversation: formatted, conversationId });
+  });
+
+  io.to(conversationId).emit("group-updated", { conversation: formatted });
+
+  return res.status(200).json({ conversation: formatted });
+});
+
+export const removeMember = asyncHandler(async (req, res) => {
+  const { conversationId, memberId } = req.params;
+  const userId = req.user._id.toString();
+
+  const conversation = await getConversationById(conversationId);
+  if (!conversation) {
+    return res.status(404).json({ message: "Không tìm thấy cuộc trò chuyện" });
+  }
+
+  if (conversation.type !== "group") {
+    return res.status(400).json({ message: "Cuộc trò chuyện này không phải là nhóm" });
+  }
+
+  const creatorId = conversation.group?.createdBy?.toString() || conversation.group?.createBy?.toString();
+  if (creatorId !== userId && userId !== memberId) {
+    return res.status(403).json({ message: "Chỉ trưởng nhóm mới có quyền xóa thành viên" });
+  }
+
+  conversation.participants = conversation.participants.filter(p => p.userId.toString() !== memberId);
+  
+  // Đẩy thành viên bị xóa vào danh sách removedUsers nếu chưa có
+  if (!conversation.removedUsers.some(rId => rId.toString() === memberId)) {
+    conversation.removedUsers.push(memberId);
+  }
+  
+  await conversation.save();
+
+  await conversation.populate([
+    { path: "participants.userId", select: "displayName avatarUrl" },
+    { path: "lastMessage.senderId", select: "displayName avatarUrl" },
+  ]);
+
+  const participants = (conversation.participants || []).map((p) => ({
+    _id: p.userId?._id || p.userId,
+    displayName: p.userId?.displayName || "",
+    avatarUrl: p.userId?.avatarUrl ?? null,
+    joinedAt: p.joinedAt,
+    clearedAt: p.clearedAt ?? null,
+  }));
+
+  const lastMessage = conversation.lastMessage ? conversation.lastMessage.toObject() : null;
+  const formatted = { ...conversation.toObject(), participants, lastMessage };
+
+  // Phát tín hiệu cập nhật cho người dùng vừa bị xóa
+  emitToUser(memberId, "group-updated", { conversation: formatted });
+
+  // Phát tín hiệu cập nhật nhóm cho những người còn lại
+  io.to(conversationId).emit("group-updated", { conversation: formatted });
+
+  return res.status(200).json({ conversation: formatted });
+});

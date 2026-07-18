@@ -6,6 +6,8 @@ import {
   markAsSeen,
   clearConversation,
   deleteGroup,
+  addMembers,
+  removeMember,
 } from "../../controllers/conversationController.js";
 import { checkFriendship } from "../../middlewares/friendMiddleware.js";
 
@@ -17,5 +19,7 @@ router.get("/:conversationId/messages", getMessages);
 router.patch("/:conversationId/seen", markAsSeen);
 router.patch("/:conversationId/clear", clearConversation);
 router.delete("/:conversationId", deleteGroup);
+router.post("/:conversationId/members", addMembers);
+router.delete("/:conversationId/members/:memberId", removeMember);
 
 export default router;
