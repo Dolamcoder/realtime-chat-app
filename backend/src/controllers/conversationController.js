@@ -5,7 +5,6 @@ import { readMessage } from "../socket/messageSocket.js";
 import { io, emitToUser } from "../socket/index.js";
 import { emitNewMessage } from "../socket/messageSocket.js";
 import Message from "../models/Message.js";
-import { Conversation } from "../models/Conversation.js";
 import { updateConversationAfterCreateMessage } from "../utils/messageHelper.js";
 import { User } from "../models/User.js";
 export const createConversation = asyncHandler(async (req, res) => {
@@ -137,7 +136,6 @@ export const getMessages = asyncHandler(async (req, res) => {
     messages.pop();
   }
   messages = messages.reverse();
-  console.log("<<<<<data be", messages);
   return res.status(200).json({
     messages,
     nextCursor,

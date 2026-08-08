@@ -8,7 +8,6 @@ export const authMiddleware=asyncHandler(async(req, res, next)=>{
         if(!token) return res.status(401).json({message: "Không tìm thấy token"});
         jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,async(err, decodedUser)=>{
         if(err){
-            console.log(err);
             return res.status(403).json({mesage:"Access token hết hạn hoặc không đúng"})
         }
         const user=await getUserById(decodedUser.userId);

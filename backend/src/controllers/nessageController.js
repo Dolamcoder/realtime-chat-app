@@ -89,7 +89,6 @@ export const sendGroupMessage = asyncHandler(async (req, res) => {
     });
     updateConversationAfterCreateMessage(conversation, message, senderId);
     await conversation.save();
-    console.log("start emit")
     emitNewMessage(io, conversation, message);
     return res.status(201).json({ message });
 });

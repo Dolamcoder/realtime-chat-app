@@ -1,156 +1,43 @@
 import { asyncHandler } from "../utils/asyncHandle.js";
-import { getUserById } from "../services/userService.js";
-import { User } from "../models/User.js";
-import { Friend } from "../models/Friend.js";
-import { FriendRequest } from "../models/FriendRequest.js";
-import { Notification } from "../models/Notification.js";
-import { emitToUser } from "../socket/index.js";
 import {
-  emitFriendRequestReceived,
-  emitFriendRequestAccepted,
-  emitFriendRequestDeleted,
-} from "../socket/friendSocket.js";
-import {
-  checkRelation,
-  createFriend,
-  getAllFriendShips,
+  sendFriendRequestService,
+  acceptFriendRequestService,
+  deleteFriendRequestService,
+  getAllFriendsService,
+  getAllFriendRequestService,
   getFriendSuggestions,
 } from "../services/friendService.js";
-import {
-  sendRequest,
-  getRequestById,
-  deleteRequest,
-  getAllSentRequest,
-  getAllSReceivedRequest,
-} from "../services/friendRequestService.js";
 
 export const sendFriendRequest = asyncHandler(async (req, res) => {
   const { to, message } = req.body;
   const from = req.user._id;
-  if (to === from) {
-    return res
-      .status(400)
-      .json({ message: "Không thể gửi lời mời cho chính mình" });
-  }
-  const user = await getUserById(to);
-  let userA = to.toString();
-  let userB = from.toString();
-  if (userA > userB) {
-    [userA, userB] = [userB, userA];
-  }
-  await checkRelation(userA, userB, from, to);
-  const request = await sendRequest(from, to, message);
-
-  try {
-    const senderObj = await User.findById(from).select("displayName avatarUrl").lean();
-    const notification = await Notification.create({
-      recipient: to,
-      sender: from,
-      type: "friend_request",
-      content: `${senderObj.displayName} đã gửi cho bạn một lời mời kết bạn.`,
-      relatedId: request._id
-    });
-    emitToUser(to, "new-notification", {
-      ...notification,
-      sender: senderObj
-    });
-  } catch (e) {
-    console.error("Lỗi khi tạo thông báo gửi lời mời kết bạn", e);
-  }
-
-  try {
-    const populatedRequest = await FriendRequest.findById(request._id)
-      .populate("from", "_id username displayName avatarUrl")
-      .populate("to", "_id username displayName avatarUrl")
-      .lean();
-    emitFriendRequestReceived(to.toString(), populatedRequest);
-  } catch (e) {
-    console.error("Lỗi khi phát socket friend-request-received", e);
-  }
-
-  return res.status(200).json({
-    message: "Gửi lời mời kết bạn thành công",
-    request,
-  });
+  const result = await sendFriendRequestService(from, to, message);
+  return res.status(200).json(result);
 });
 
 export const acceptFriendRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
   const userId = req.user._id;
-  const request = await getRequestById(requestId);
-  if (userId.toString() !== request.to.toString()) {
-    return res.status(403).json({
-      message: "Bạn không có quyền chấp nhận yêu cầu này",
-    });
-  }
-  const friend = await createFriend(request.from, request.to);
-  await deleteRequest(requestId);
-
-  try {
-    const accepterObj = await User.findById(userId).select("_id username displayName avatarUrl").lean();
-    const senderObj = await User.findById(request.from).select("_id username displayName avatarUrl").lean();
-
-    const notification = await Notification.create({
-      recipient: request.from,
-      sender: userId,
-      type: "friend_accept",
-      content: `${accepterObj.displayName} đã chấp nhận lời mời kết bạn của bạn.`,
-      relatedId: friend._id
-    });
-    emitToUser(request.from, "new-notification", {
-      ...notification,
-      sender: accepterObj
-    });
-
-    emitFriendRequestAccepted(request.from.toString(), {
-      requestId,
-      friend: accepterObj,
-    });
-    emitFriendRequestAccepted(userId.toString(), {
-      requestId,
-      friend: senderObj,
-    });
-  } catch (e) {
-    console.error("Lỗi khi tạo thông báo đồng ý kết bạn", e);
-  }
-
-  return res
-    .status(200)
-    .json({ message: "Chấp nhận lời mời kết bạn thành công" });
+  const result = await acceptFriendRequestService(userId, requestId);
+  return res.status(200).json(result);
 });
 
 export const deleteFriendRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
-  const request = await getRequestById(requestId);
-  await deleteRequest(requestId);
-
-  try {
-    emitFriendRequestDeleted(request.from.toString(), { requestId });
-    emitFriendRequestDeleted(request.to.toString(), { requestId });
-  } catch (e) {
-    console.error("Lỗi khi phát socket deleteFriendRequest", e);
-  }
-
+  await deleteFriendRequestService(requestId);
   return res.sendStatus(204);
 });
 
 export const getAllFriends = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const friendShips = await getAllFriendShips(userId);
-  if (!friendShips.length) {
-    return res.status(200).json({ friends: [] });
-  }
-  const friends = friendShips.map((f) =>
-    f.userA._id.toString() === userId.toString() ? f.userB : f.userA,
-  );
+  const friends = await getAllFriendsService(userId);
   return res.status(200).json({ friends });
 });
 
 export const getAllFriendRequest = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const sent = await getAllSentRequest(userId);
-  const received = await getAllSReceivedRequest(userId);
-  return res.status(200).json({sent, received});
+  const result = await getAllFriendRequestService(userId);
+  return res.status(200).json(result);
 });
 
 export const getSuggestions = asyncHandler(async (req, res) => {

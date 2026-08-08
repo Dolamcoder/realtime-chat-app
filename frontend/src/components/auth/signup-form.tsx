@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,20 +9,29 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router";
+import { VerifyEmailModal } from "./VerifyEmailModal";
+import { Eye, EyeOff } from "lucide-react";
+
 const signUpSchema = z.object({
   firstname: z.string().min(1, "Tên không được để trống"),
   lastname: z.string().min(1, "Họ không được để trống"),
   username: z.string().min(6, "Tên đăng nhập có ít nhất 6 kí tự"),
-  email: z.email("Email không hợp lệ"),
+  email: z.string().email("Email không hợp lệ"),
   password: z.string().min(8, "Mật khẩu phải có ít nhất 8 kí tự"),
 });
+
 type SignUpFormValues = z.infer<typeof signUpSchema>;
+
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const { signUp } = useAuthStore();
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -29,21 +39,22 @@ export function SignupForm({
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
   });
+
   const onSubmit = async (data: SignUpFormValues) => {
     try {
       const { firstname, lastname, username, email, password } = data;
-      await signUp(username, password, email, firstname, lastname);
-      navigate("/signin");
-    } catch (error) {
-    }
+      const res = await signUp(username, password, email, firstname, lastname);
+      setRegisteredEmail(res?.email || email);
+      setShowVerifyModal(true);
+    } catch (error) {}
   };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 border-border">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-3">
-              {/* header */}
               <div className="flex flex-col items-center text-center gap-2">
                 <a href="" className="mx-auto block w-fit">
                   <img src="/logo.svg" alt="" />
@@ -53,7 +64,7 @@ export function SignupForm({
                   Chào mừng bạn! Hãy đăng ký để bắt đầu
                 </p>
               </div>
-              {/* Họ và tên */}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="lastname" className="block text-sm">
@@ -88,7 +99,7 @@ export function SignupForm({
                   )}
                 </div>
               </div>
-              {/* username */}
+
               <div className="flex flex-col gap-3">
                 <Label htmlFor="username" className="block text-sm">
                   Tên đăng nhập
@@ -105,7 +116,7 @@ export function SignupForm({
                   </p>
                 )}
               </div>
-              {/* email */}
+
               <div className="flex flex-col gap-3">
                 <Label htmlFor="email" className="block text-sm">
                   Email
@@ -122,30 +133,40 @@ export function SignupForm({
                   </p>
                 )}
               </div>
-              {/* password */}
+
               <div className="flex flex-col gap-3">
                 <Label htmlFor="password" className="block text-sm">
                   Mật khẩu
                 </Label>
-                <Input
-                  type="password"
-                  id="password"
-                  placeholder="Lam1234@2006"
-                  {...register("password")}
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    placeholder="Lam1234@2006"
+                    className="pr-10"
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="text-destructive text-sm">
                     {errors.password.message}
                   </p>
                 )}
               </div>
-              {/* Button đăng ký */}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+
+              <Button type="submit" className="w-full font-bold" disabled={isSubmitting}>
                 {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
               </Button>
               <div className="text-center text-sm">
                 Bạn đã có tài khoản?{" "}
-                <a href="/signin" className="underline underline-offset-4">
+                <a href="/signup" className="underline underline-offset-4">
                   Đăng nhập
                 </a>
               </div>
@@ -160,6 +181,13 @@ export function SignupForm({
           </div>
         </CardContent>
       </Card>
+
+      <VerifyEmailModal
+        open={showVerifyModal}
+        email={registeredEmail}
+        onClose={() => setShowVerifyModal(false)}
+        onSuccess={() => navigate("/signin")}
+      />
     </div>
   );
 }

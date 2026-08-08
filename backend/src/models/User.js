@@ -1,45 +1,68 @@
 import mongoose from 'mongoose'
-const userSchema=new mongoose.Schema({
-    username:{
+const userSchema = new mongoose.Schema({
+    username: {
         type: String,
         required: true,
         unique: true,
         trim: true,
-        lowercase:true
+        lowercase: true
     },
-    hashedPassword:{
-        type:String,
+    hashedPassword: {
+        type: String,
         required: true,
     },
     email: {
-        type:String,
+        type: String,
         required: true,
         unique: true,
-        lowercase:true,
-        trim:true
+        lowercase: true,
+        trim: true
     },
-    displayName:{
+    displayName: {
         type: String,
         required: true,
         trim: true
     },
-    avatarUrl:{
+    avatarUrl: {
         type: String
     },
-    avatarId:{
+    avatarId: {
         type: String
     },
-    bio:{
+    bio: {
         type: String,
         max: 500
     },
-    role:{
+    role: {
         type: Number,
         default: 1
     },
-    phone:{
+    phone: {
         type: String,
-        sparse:true
-    }},{timestamps:true,}
-)
-export const User=mongoose.model("User", userSchema)
+        sparse: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationOtp: {
+        type: String
+    },
+    verificationOtpExpires: {
+        type: Date
+    },
+    resetPasswordOtp: {
+        type: String
+    },
+    resetPasswordOtpExpires: {
+        type: Date
+    },
+    changePasswordOtp: {
+        type: String
+    },
+    changePasswordOtpExpires: {
+        type: Date
+    }
+}, { timestamps: true })
+
+export const User = mongoose.model("User", userSchema)

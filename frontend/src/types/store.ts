@@ -1,6 +1,7 @@
 import type { Socket } from "socket.io-client";
 import type { Conversation, Message } from "./chat";
 import type { User } from "./user";
+
 export interface AuthState {
   accessToken: String | null;
   user: User | null;
@@ -13,20 +14,27 @@ export interface AuthState {
     email: String,
     firstname: String,
     lastname: String,
-  ) => Promise<void>;
-  signIn: (username: String, password: String) => Promise<void>;
+  ) => Promise<any>;
+  verifyEmail: (email: string, otp: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (email: string, otp: string, newPassword: string) => Promise<void>;
+  signIn: (username: String, password: String) => Promise<any>;
   signOut: () => Promise<void>;
   fetchMe: () => Promise<void>;
   refresh: () => Promise<void>;
   updateProfile: (displayName: string, bio: string, phone: string) => Promise<void>;
   updateAvatar: (file: File) => Promise<void>;
-  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  requestChangePasswordOtp: () => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string, otp: string) => Promise<void>;
 }
+
 export interface ThemeState {
   isDark: boolean;
   toggleTheme: () => void;
   setTheme: (dark: boolean) => void;
 }
+
 export interface ChatState {
   conversations: Conversation[];
   messages: Record<
@@ -58,10 +66,10 @@ export interface ChatState {
   showSearch: boolean;
   setShowSearch: (show: boolean) => void;
 }
+
 export interface SocketState {
   socket: Socket | null;
   onlineUsers: string[];
   connectSocket: () => void;
   disconnectSocket: () => void;
-
 }

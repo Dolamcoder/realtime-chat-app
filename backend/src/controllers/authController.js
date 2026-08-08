@@ -1,68 +1,75 @@
-import { checkUsername, checkEmail, hashPassword, checkPassword, createAccessToken } from '../services/authService.js';
-import { createUser, getUserByUsername } from '../services/userService.js'
-import { asyncHandler } from '../utils/asyncHandle.js';
-import { saveRefreshToken, createRefreshToken, deleteRefreshToken, verifyRefreshToken } from '../services/sessionService.js';
-import ApiError from '../utils/ApiError.js';
-
-export const register = asyncHandler(async (req, res) => {
-  const { username, email, password, firstname, lastname } = req.body;
-  console.log("checkk data client", username, email, password, firstname, lastname)
-  await checkEmail(email);
-  await checkUsername(username);
-  const hashedPassword = await hashPassword(password);
-  await createUser({ username, email, hashedPassword, displayName: `${firstname} ${lastname}` })
-  return res.status(201).json({
-    message: "Đăng ký thành công",
-  });
-});
+import { asyncHandler } from "../utils/asyncHandle.js";
+import {
+  registerService,
+  verifyEmailService,
+  resendVerificationOtpService,
+  loginService,
+  forgotPasswordService,
+  resetPasswordService,
+  logoutService,
+  refreshAccessTokenService,
+} from "../services/authService.js";
 
 const getCookieOptions = (req) => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const origin = req.headers.origin || '';
-  const isHttpsOrigin = origin.startsWith('https://');
+  const isProduction = process.env.NODE_ENV === "production";
+  const origin = req.headers.origin || "";
+  const isHttpsOrigin = origin.startsWith("https://");
   const useSecure = isProduction || isHttpsOrigin;
 
   return {
     httpOnly: true,
     secure: useSecure,
-    sameSite: useSecure ? 'none' : 'lax',
+    sameSite: useSecure ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 };
 
+export const register = asyncHandler(async (req, res) => {
+  const result = await registerService(req.body);
+  return res.status(201).json(result);
+});
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const result = await verifyEmailService(req.body);
+  return res.status(200).json(result);
+});
+
+export const resendVerificationOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const result = await resendVerificationOtpService(email);
+  return res.status(200).json(result);
+});
 
 export const login = asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
-  const user = await getUserByUsername(username);
-  await checkPassword(password, user.hashedPassword);
-  const accessToken = createAccessToken(user._id);
-  const refreshToken = createRefreshToken(user._id);
-  await saveRefreshToken(user._id, refreshToken);
-  res.cookie('refreshToken', refreshToken, getCookieOptions(req));
-
+  const { accessToken, refreshToken, ...data } = await loginService(req.body);
+  res.cookie("refreshToken", refreshToken, getCookieOptions(req));
   return res.status(200).json({
-    message: "Đăng nhập thành công",
+    ...data,
     accessToken,
   });
 });
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const result = await forgotPasswordService(email);
+  return res.status(200).json(result);
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const result = await resetPasswordService(req.body);
+  return res.status(200).json(result);
+});
+
 export const logOut = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
-  if (token) {
-    await deleteRefreshToken(token);
-    const { maxAge: _, ...clearOptions } = getCookieOptions(req);
-    res.clearCookie("refreshToken", clearOptions);
-  }
+  await logoutService(token);
+  const { maxAge: _, ...clearOptions } = getCookieOptions(req);
+  res.clearCookie("refreshToken", clearOptions);
   return res.sendStatus(204);
-})
+});
+
 export const refreshToken = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
-  console.log("check cookie", token);
-  if (!token) {
-    throw new ApiError(401, "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn");
-  }
-  const userId = await verifyRefreshToken(token);
-  console.log("vdadsd", userId);
-  const accessToken = createAccessToken(userId);
-  console.log("<<< new access token", accessToken)
-  res.status(200).json({ accessToken })
-})
+  const result = await refreshAccessTokenService(token);
+  return res.status(200).json(result);
+});

@@ -100,8 +100,6 @@ export const getConversationIdForSocketIO = async (userId) => {
   } catch (err) { throw err }
 }
 export const findDirectConversation = async (userId1, userId2) => {
-  console.log("sender", userId1);
-  console.log("recipient", userId2);
   return await Conversation.findOne({
     type: "direct",
     "participants.userId": {
