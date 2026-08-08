@@ -41,10 +41,6 @@ export const createAndSendChangePasswordOtp = async (user) => {
 };
 
 export const verifyOtpCode = (savedOtp, savedExpires, inputOtp) => {
-  if (!inputOtp || typeof inputOtp !== "string") {
-    throw new ApiError(400, "Vui lòng nhập mã OTP 6 chữ số");
-  }
-
   if (!savedOtp || savedOtp.trim() !== inputOtp.trim()) {
     throw new ApiError(400, "Mã OTP không chính xác");
   }

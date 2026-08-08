@@ -43,10 +43,6 @@ export const queryUsers = async (queryStr, currentUserId) => {
 };
 
 export const updateProfileService = async (userId, { displayName, bio, phone }) => {
-  if (!displayName || displayName.trim() === "") {
-    throw new ApiError(400, "Tên hiển thị không được để trống");
-  }
-
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(404, "Không tìm thấy người dùng");
@@ -93,10 +89,6 @@ export const sendChangePasswordOtpService = async (userId) => {
 };
 
 export const changePasswordWithOtpService = async (userId, { oldPassword, newPassword, otp }) => {
-  if (!oldPassword || !newPassword || !otp) {
-    throw new ApiError(400, "Vui lòng điền đầy đủ mật khẩu cũ, mật khẩu mới và mã OTP");
-  }
-
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(404, "Không tìm thấy người dùng");

@@ -32,9 +32,6 @@ export const checkUsername = async (username) => {
 };
 
 export const hashPassword = async (password) => {
-  if (!password || password.length < 6) {
-    throw new ApiError(400, "Password phải có ít nhất 6 ký tự");
-  }
   return await bcrypt.hash(password, 10);
 };
 
@@ -80,10 +77,6 @@ export const registerService = async ({ username, email, password, firstname, la
 };
 
 export const verifyEmailService = async ({ email, otp }) => {
-  if (!email || !otp) {
-    throw new ApiError(400, "Vui lòng cung cấp email và mã OTP");
-  }
-
   const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     throw new ApiError(404, "Không tìm thấy tài khoản với email này");
@@ -108,10 +101,6 @@ export const verifyEmailService = async ({ email, otp }) => {
 };
 
 export const resendVerificationOtpService = async (email) => {
-  if (!email) {
-    throw new ApiError(400, "Vui lòng nhập địa chỉ email");
-  }
-
   const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     throw new ApiError(404, "Không tìm thấy tài khoản với email này");
@@ -129,10 +118,6 @@ export const resendVerificationOtpService = async (email) => {
 };
 
 export const loginService = async ({ username, password }) => {
-  if (!username || !password) {
-    throw new ApiError(400, "Vui lòng điền tên đăng nhập và mật khẩu");
-  }
-
   const user = await User.findOne({ username: username.toLowerCase().trim() });
   if (!user) {
     throw new ApiError(404, "Username không tồn tại");
@@ -156,10 +141,6 @@ export const loginService = async ({ username, password }) => {
 };
 
 export const forgotPasswordService = async (email) => {
-  if (!email) {
-    throw new ApiError(400, "Vui lòng cung cấp địa chỉ email");
-  }
-
   const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     throw new ApiError(404, "Không tìm thấy tài khoản liên kết với địa chỉ email này");
@@ -174,10 +155,6 @@ export const forgotPasswordService = async (email) => {
 };
 
 export const resetPasswordService = async ({ email, otp, newPassword }) => {
-  if (!email || !otp || !newPassword) {
-    throw new ApiError(400, "Vui lòng cung cấp đầy đủ thông tin");
-  }
-
   const user = await User.findOne({ email: email.toLowerCase().trim() });
   if (!user) {
     throw new ApiError(404, "Không tìm thấy tài khoản");
