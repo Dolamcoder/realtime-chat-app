@@ -6,7 +6,6 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-// REQUEST INTERCEPTOR
 instance.interceptors.request.use(
   (config) => {
     const { accessToken } = useAuthStore.getState();
@@ -22,24 +21,20 @@ instance.interceptors.request.use(
   }
 );
 
-// RESPONSE INTERCEPTOR
 instance.interceptors.response.use(
   (response) => {
-    // giữ nguyên response để service dùng .data
     return response;
   },
 
   async (error) => {
     const originalRequest = error.config;
 
-    // Không có config
     if (!originalRequest) {
       return Promise.reject(error);
     }
 
     const url = originalRequest.url || "";
 
-    // Không refresh cho auth APIs
     if (
       url.includes("/auth/login") ||
       url.includes("/auth/register") ||
@@ -50,14 +45,12 @@ instance.interceptors.response.use(
       );
     }
 
-    // Tránh loop vô hạn
     if (originalRequest._retry) {
       return Promise.reject(
         error.response?.data || error
       );
     }
 
-    // Access token hết hạn
     if (error.response?.status === 403) {
       originalRequest._retry = true;
 

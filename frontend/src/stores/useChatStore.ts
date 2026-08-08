@@ -49,7 +49,6 @@ export const useChatStore = create<ChatState>()(
             convoId,
             nextCursor,
           );
-          console.log("<<<<<check message useChatStore", messages);
           const processed = fetched.map((m) => ({
             ...m,
             isOwn: m.senderId === user?._id,

@@ -80,7 +80,6 @@ export const chatService = {
   },
   async markSeen(conversationId: String) {
     const res = await api.patch(`/conversations/${conversationId}/seen`);
-    console.log("<<<<<<<<<<<updateSeenfe", res.data)
     return res.data;
   },
   async clearConversation(conversationId: string) {

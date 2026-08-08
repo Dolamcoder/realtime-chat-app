@@ -1,40 +1,18 @@
 import { useEffect } from "react";
 import { useNotificationStore } from "@/stores/useNotificationStore";
-import { useChatStore } from "@/stores/useChatStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
-import { Bell, UserPlus, UserCheck, MessageSquare, ChevronLeft } from "lucide-react";
-import UserAvatar from "../user/UserAvatar";
-import { useNavigate, Link } from "react-router";
+import { Bell, UserPlus, UserCheck, MessageSquare } from "lucide-react";
 
 const NotificationsList = () => {
   const { notifications, loading, fetchNotifications, markAsRead } = useNotificationStore();
-  const { conversations, setActiveConversation, fetchConversations } = useChatStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
   const handleNotificationClick = async (notification: any) => {
-    // 1. Mark as read
     if (!notification.isRead) {
       await markAsRead(notification._id);
-    }
-
-    // 2. Navigate based on type
-    if (notification.type === "friend_request" || notification.type === "friend_accept") {
-      navigate("/ban-be");
-    } else if (notification.type === "new_message") {
-      const convoId = notification.relatedId;
-      if (convoId) {
-        // Ensure conversation exists in store
-        const existingConvo = conversations.find((c) => c._id === convoId);
-        if (!existingConvo) {
-          await fetchConversations();
-        }
-        setActiveConversation(convoId);
-      }
-      navigate("/");
     }
   };
 

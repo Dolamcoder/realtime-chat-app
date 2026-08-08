@@ -5,11 +5,24 @@ import { connectDB } from './src/config/db.js'
 import { errorHandler } from './src/middlewares/errorHandle.js'
 import router from "./src/routes/v1/index.js"
 import cors from "cors"
-dotenv.config();
+const nodeEnv = process.env.NODE_ENV || 'development';
+dotenv.config({ path: `.env.${nodeEnv}` });
 import { app, server } from "./src/socket/index.js";
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+const allowedOrigins = [
+    process.env.CLIENT_URL
+]
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true)
+        } else {
+            callback(new ApiError(403, "Origin không được phép"));
+        }
+    }
+    , credentials: true
+}));
 app.use("/uploads", express.static("uploads"));
 app.use("/api/v1", router)
 app.get("/", (req, res) => {

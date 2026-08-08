@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFriendStore } from "@/stores/useFriendStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
-import { Users, UserCheck, MessageSquare, Check, X, Clock, ChevronLeft } from "lucide-react";
+import { Users, UserCheck, MessageSquare, Check, X, Clock } from "lucide-react";
 import UserAvatar from "../user/UserAvatar";
-import { useNavigate, Link } from "react-router";
+import { useNavigate } from "react-router";
 import api from "@/lib/axios";
 
 const FriendsList = () => {
@@ -23,38 +23,16 @@ const FriendsList = () => {
   const { fetchConversations, setActiveConversation } = useChatStore();
   const navigate = useNavigate();
 
-  // Local state to keep items in list even after store is updated
-  const [localReceived, setLocalReceived] = useState<any[]>([]);
-  const [localSent, setLocalSent] = useState<any[]>([]);
-  const [processed, setProcessed] = useState<Record<string, "accepted" | "rejected" | "cancelled">>({});
-
   useEffect(() => {
     fetchFriends();
     fetchRequests();
   }, []);
-
-  useEffect(() => {
-    setLocalReceived((prev) => {
-      const existingIds = new Set(prev.map((r) => r._id));
-      const newItems = receivedRequests.filter((r) => !existingIds.has(r._id));
-      return [...prev, ...newItems];
-    });
-  }, [receivedRequests]);
-
-  useEffect(() => {
-    setLocalSent((prev) => {
-      const existingIds = new Set(prev.map((r) => r._id));
-      const newItems = sentRequests.filter((r) => !existingIds.has(r._id));
-      return [...prev, ...newItems];
-    });
-  }, [sentRequests]);
 
   const handleStartChat = async (friendId: string) => {
     try {
       const res = await api.post("/conversations", { memberIds: [friendId] });
       const convo = res.data.conversation;
 
-      // Update local state directly so there is no delay
       useChatStore.setState((state) => {
         const exists = state.conversations.some((c) => c._id === convo._id);
         if (exists) return state;
@@ -64,26 +42,10 @@ const FriendsList = () => {
       setActiveConversation(convo._id);
       navigate("/");
 
-      // Sync list in background
       fetchConversations();
     } catch (err) {
-      console.error("Lỗi khi bắt đầu cuộc trò chuyện:", err);
+      console.error(err);
     }
-  };
-
-  const handleAccept = async (reqId: string) => {
-    setProcessed((prev) => ({ ...prev, [reqId]: "accepted" }));
-    await acceptFriendRequest(reqId);
-  };
-
-  const handleReject = async (reqId: string) => {
-    setProcessed((prev) => ({ ...prev, [reqId]: "rejected" }));
-    await rejectFriendRequest(reqId);
-  };
-
-  const handleCancel = async (reqId: string) => {
-    setProcessed((prev) => ({ ...prev, [reqId]: "cancelled" }));
-    await cancelFriendRequest(reqId);
   };
 
   return (
@@ -103,10 +65,7 @@ const FriendsList = () => {
         </div>
       </header>
 
-      {/* Body Layout */}
       <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 beautiful-scrollbar">
-
-        {/* Column 1: Friends list */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5 border-b border-border/40 pb-2">
             <UserCheck className="w-4 h-4 text-emerald-500" />
@@ -156,20 +115,18 @@ const FriendsList = () => {
           )}
         </div>
 
-        {/* Column 2: Requests list */}
         <div className="space-y-6">
-          {/* Incoming invitations */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5 border-b border-border/40 pb-2">
               <Clock className="w-4 h-4 text-primary" />
               Yêu cầu kết bạn nhận được ({receivedRequests.length})
             </h3>
 
-            {localReceived.length === 0 ? (
+            {receivedRequests.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">Không có lời mời kết bạn nào.</p>
             ) : (
               <div className="space-y-3">
-                {localReceived.map((req) => (
+                {receivedRequests.map((req) => (
                   <div
                     key={req._id}
                     className="flex items-center justify-between p-3.5 bg-muted/15 border border-border/30 rounded-2xl hover:border-border/60 transition-all duration-200"
@@ -194,33 +151,21 @@ const FriendsList = () => {
                         )}
                       </div>
                     </div>
-                    <div>
-                      {processed[req._id] === "accepted" ? (
-                        <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-3 py-1.5 rounded-full border border-green-500/20">
-                          Đã chấp nhận
-                        </span>
-                      ) : processed[req._id] === "rejected" ? (
-                        <span className="text-xs font-semibold text-zinc-500 bg-zinc-500/10 px-3 py-1.5 rounded-full border border-zinc-500/20">
-                          Đã từ chối
-                        </span>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleAccept(req._id)}
-                            className="p-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-emerald-500/20"
-                            title="Đồng ý"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleReject(req._id)}
-                            className="p-2 bg-red-500 hover:bg-red-600 active:scale-95 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-red-500/20"
-                            title="Từ chối"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => acceptFriendRequest(req._id)}
+                        className="p-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-emerald-500/20"
+                        title="Đồng ý"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => rejectFriendRequest(req._id)}
+                        className="p-2 bg-red-500 hover:bg-red-600 active:scale-95 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-red-500/20"
+                        title="Từ chối"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -228,18 +173,17 @@ const FriendsList = () => {
             )}
           </div>
 
-          {/* Sent invitations */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5 border-b border-border/40 pb-2">
               <Clock className="w-4 h-4 text-amber-500" />
               Lời mời đã gửi ({sentRequests.length})
             </h3>
 
-            {localSent.length === 0 ? (
+            {sentRequests.length === 0 ? (
               <p className="text-sm text-muted-foreground py-2">Bạn không gửi lời mời nào gần đây.</p>
             ) : (
               <div className="space-y-3">
-                {localSent.map((req) => (
+                {sentRequests.map((req) => (
                   <div
                     key={req._id}
                     className="flex items-center justify-between p-3 bg-background border border-border/30 rounded-2xl transition-all duration-200"
@@ -260,18 +204,12 @@ const FriendsList = () => {
                       </div>
                     </div>
                     <div>
-                      {processed[req._id] === "cancelled" ? (
-                        <span className="text-xs font-semibold text-zinc-500 bg-zinc-500/10 px-3 py-1.5 rounded-full border border-zinc-500/20">
-                          Đã hủy
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleCancel(req._id)}
-                          className="text-xs font-semibold text-red-500 hover:text-white hover:bg-red-500 border border-red-500/20 hover:border-red-500 px-3.5 py-1.5 rounded-full transition-all duration-200"
-                        >
-                          Hủy yêu cầu
-                        </button>
-                      )}
+                      <button
+                        onClick={() => cancelFriendRequest(req._id)}
+                        className="text-xs font-semibold text-red-500 hover:text-white hover:bg-red-500 border border-red-500/20 hover:border-red-500 px-3.5 py-1.5 rounded-full transition-all duration-200"
+                      >
+                        Hủy yêu cầu
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -279,7 +217,6 @@ const FriendsList = () => {
             )}
           </div>
         </div>
-
       </div>
     </SidebarInset>
   );

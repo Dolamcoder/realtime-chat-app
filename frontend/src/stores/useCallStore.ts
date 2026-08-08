@@ -146,7 +146,6 @@ export const useCallStore = create<CallState>((set, get) => ({
 
   startCall: async (targetUserId, name, avatar, callType) => {
     try {
-      console.log("Emit call-user", { callType });
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Trình duyệt không hỗ trợ truy cập Micro hoặc kết nối không an toàn (Yêu cầu HTTPS hoặc localhost).");
       }

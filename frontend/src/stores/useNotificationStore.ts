@@ -49,17 +49,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   addNotification: (notification) => {
     set((state) => {
-      // Avoid duplicate notifications (if any)
       if (state.notifications.some((n) => n._id === notification._id)) {
         return {};
       }
       const newNotifications = [notification, ...state.notifications];
       const unreadCount = newNotifications.filter((n: any) => !n.isRead).length;
       
-      // Toast notification alert
       toast.info(notification.content, {
-        description: "Bấm vào menu Thông Báo để xem chi tiết.",
-        duration: 5000,
+        duration: 4000,
       });
 
       return { notifications: newNotifications, unreadCount };

@@ -39,14 +39,17 @@ export const deleteRefreshToken = async (refreshToken) => {
 };
 export const verifyRefreshToken = async (refreshToken) => {
   try {
+    if (!refreshToken) {
+      throw new ApiError(401, "Không tìm thấy refresh token");
+    }
     const session = await Session.findOne({ refreshToken });
     if (!session) {
-      console.log("lỗi ở đây");
-      throw new ApiError(404, "Token không tồn tại");
+      throw new ApiError(401, "Phiên làm việc không tồn tại hoặc đã đăng xuất");
     }
     jwt.verify(refreshToken, process.env.REFRRESH_TOKEN_SECRET);
     return session.userId;
   } catch (error) {
-    throw new ApiError(403, "token không hợp lệ hoặc đã hết hạn");
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(403, "Token không hợp lệ hoặc đã hết hạn");
   }
 };

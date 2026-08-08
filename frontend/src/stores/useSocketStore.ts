@@ -5,6 +5,7 @@ import { useAuthStore } from "./useAuthStore";
 import { useChatStore } from "./useChatStore";
 import { useCallStore } from "./useCallStore";
 import { useNotificationStore } from "./useNotificationStore";
+import { useFriendStore } from "./useFriendStore";
 
 const socketURL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
 
@@ -21,7 +22,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
         })
         set({ socket });
         socket.on("connect", () => {
-            console.log("connect socket success");
             useNotificationStore.getState().fetchNotifications();
         });
         socket.on("online-users", (userIds) => {
@@ -31,8 +31,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             const currentUserId = useAuthStore.getState().user?._id;
             const isOwn = message.senderId === currentUserId;
 
-            // Nếu là tin nhắn của chính mình, giao diện đã được cập nhật ngay lập tức từ trước.
-            // Chỉ xử lý tin nhắn nhận được từ người khác.
             if (isOwn) return;
 
             const { addMessage, updateConversation, activeConversationId, markSeen } = useChatStore.getState();
@@ -63,7 +61,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             updateConversation(conversation);
         });
         socket.on("incoming-call", (data) => {
-            console.log("<<<<<incoming-call>>>>>", data);
             useCallStore.getState().handleIncomingCall(data);
         });
         socket.on("call-accepted", (data) => {
@@ -79,8 +76,16 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             useCallStore.getState().handleCallEnded();
         });
         socket.on("new-notification", (data) => {
-            console.log("<<<<<new-notification>>>>>", data);
             useNotificationStore.getState().addNotification(data);
+        });
+        socket.on("friend-request-received", (data) => {
+            useFriendStore.getState().addReceivedRequest(data);
+        });
+        socket.on("friend-request-accepted", (data) => {
+            useFriendStore.getState().handleRequestAccepted(data);
+        });
+        socket.on("friend-request-deleted", (data) => {
+            useFriendStore.getState().handleRequestDeleted(data);
         });
         socket.on("group-deleted", ({ conversationId }) => {
             useChatStore.setState((state) => {
@@ -90,7 +95,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
                     }
                     return c;
                 });
-                // Nếu đang mở đúng cuộc trò chuyện bị giải tán, cập nhật lại trạng thái hiển thị
                 return {
                     conversations: updatedConversations,
                 };
@@ -152,9 +156,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             });
         });
         socket.on("new-conversation", ({ conversation, conversationId }) => {
-            // Join room mới ngay lập tức để nhận tin nhắn realtime
             socket.emit("join-conversation", { conversationId });
-            // Thêm conversation vào store nếu chưa có (dành cho người nhận)
             useChatStore.setState((state) => {
                 const exists = state.conversations.some((c) => c._id === conversation._id);
                 if (exists) return state;
@@ -164,7 +166,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
             });
         });
         socket.on("connect_error", (err) => {
-            console.log("<<<<err>>>>", err);
+            console.error(err);
         });
     },
     disconnectSocket: () => {

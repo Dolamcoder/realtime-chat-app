@@ -3,7 +3,6 @@ import { useFriendStore } from "@/stores/useFriendStore";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { Search, UserPlus, UserCheck, Clock, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import UserAvatar from "../user/UserAvatar";
-import { Link } from "react-router";
 
 const FriendSuggestions = () => {
   const {
@@ -119,9 +118,7 @@ const FriendSuggestions = () => {
         </div>
       </header>
 
-      {/* Body */}
       <div className="flex-1 overflow-y-auto p-6 space-y-8 beautiful-scrollbar">
-        {/* Search Bar */}
         <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/80" />
           <input
@@ -133,7 +130,6 @@ const FriendSuggestions = () => {
           />
         </div>
 
-        {/* Search Results */}
         {query.trim().length > 0 && (
           <div className="space-y-4">
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
@@ -175,7 +171,6 @@ const FriendSuggestions = () => {
           </div>
         )}
 
-        {/* Suggestions list */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5">
             <Users className="w-4 h-4 text-primary" />
@@ -230,7 +225,6 @@ const FriendSuggestions = () => {
                 })}
               </div>
 
-              {/* Pagination Controls */}
               {suggestionsTotalPages > 1 && (
                 <div className="flex items-center justify-center gap-4 border-t border-border/40 pt-4">
                   <button
@@ -259,7 +253,6 @@ const FriendSuggestions = () => {
         </div>
       </div>
 
-      {/* Modal Dialog for Friend Request Message */}
       {modalOpen && targetUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
           <div className="bg-background border border-border/40 w-full max-w-md p-6 rounded-2xl shadow-2xl flex flex-col gap-4 animate-scale-in">

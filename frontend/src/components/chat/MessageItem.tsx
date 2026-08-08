@@ -18,9 +18,6 @@ const MessageItem = ({
 }: MessageItemProps) => {
   const { recallMessage } = useChatStore();
   const check = message.isOwn && message._id === selectedConvo.lastMessage?._id;
-  console.log("<<<<<check ", check)
-  console.log("<<<<status", message);
-  console.log("<<<<<check convo", selectedConvo);
   const msgIndex = messages.indexOf(message);
   const prev = msgIndex > 0 ? messages[msgIndex - 1] : undefined;
   const isGroupBreak =
@@ -53,7 +50,6 @@ const MessageItem = ({
           message.isOwn ? "justify-end" : "justify-start",
         )}
       >
-        {/* avatar */}
         {!message.isOwn && (
           <div className="w-8">
             {isGroupBreak && (
@@ -65,7 +61,6 @@ const MessageItem = ({
             )}
           </div>
         )}
-        {/* tin nhắn */}
         <div
           className={cn(
             "max-w-[75vw] sm:max-w-xs lg:max-w-md space-y-1 flex flex-col",
@@ -105,11 +100,9 @@ const MessageItem = ({
                 )}
                 <Card
                   className={cn(
-                    // Padding: có content hoặc file thì p-3, chỉ có image thì p-0, voice thì p-2
                     hasContent || message.fileUrl ? "p-3"
                       : message.voiceUrl ? "p-2"
                         : "p-0 bg-transparent border-0 shadow-none",
-                    // Bubble color
                     message.isOwn && needsBubble
                       ? "chat-bubble-sent border-0"
                       : needsBubble
@@ -214,7 +207,6 @@ const MessageItem = ({
             );
           })()}
 
-          {/* seen/ delivered */}
           {message.isOwn && message.status !== "sending" && message.status !== "error" && message._id === selectedConvo.lastMessage?._id && (
             <Badge
               variant="outline"
@@ -229,7 +221,6 @@ const MessageItem = ({
             </Badge>
           )}
 
-          {/* status (sending/error) */}
           {message.isOwn && message.status === "sending" && (
             <span className="text-[10px] text-muted-foreground/60 select-none animate-pulse">
               Đang gửi...

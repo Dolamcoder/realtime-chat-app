@@ -20,6 +20,10 @@ interface FriendStore {
   rejectFriendRequest: (requestId: string) => Promise<void>;
   cancelFriendRequest: (requestId: string) => Promise<void>;
   searchUsers: (query: string) => Promise<void>;
+
+  addReceivedRequest: (request: any) => void;
+  handleRequestAccepted: (data: { requestId: string; friend: any }) => void;
+  handleRequestDeleted: (data: { requestId: string }) => void;
 }
 
 export const useFriendStore = create<FriendStore>((set, get) => ({
@@ -82,7 +86,6 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
     try {
       await friendService.sendRequest(toUserId, message);
       toast.success("Đã gửi lời mời kết bạn");
-      // Refresh requests to update state to 'sent'
       await get().fetchRequests();
     } catch (e: any) {
       console.error(e);
@@ -94,7 +97,6 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
     try {
       await friendService.acceptRequest(requestId);
       toast.success("Đã kết bạn thành công!");
-      // Refresh requests, friends
       await get().fetchRequests();
       await get().fetchFriends();
     } catch (e: any) {
@@ -107,7 +109,6 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
     try {
       await friendService.rejectRequest(requestId);
       toast.success("Đã từ chối lời mời kết bạn");
-      // Refresh requests
       await get().fetchRequests();
     } catch (e: any) {
       console.error(e);
@@ -119,7 +120,6 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
     try {
       await friendService.rejectRequest(requestId);
       toast.success("Đã hủy lời mời kết bạn");
-      // Refresh requests
       await get().fetchRequests();
     } catch (e: any) {
       console.error(e);
@@ -142,5 +142,34 @@ export const useFriendStore = create<FriendStore>((set, get) => ({
     } finally {
       set({ loading: false });
     }
-  }
+  },
+
+  addReceivedRequest: (request) => {
+    set((state) => {
+      const exists = state.receivedRequests.some((r) => r._id === request._id);
+      if (exists) return state;
+      return { receivedRequests: [request, ...state.receivedRequests] };
+    });
+  },
+
+  handleRequestAccepted: ({ requestId, friend }) => {
+    set((state) => {
+      const updatedSent = state.sentRequests.filter((r) => r._id !== requestId);
+      const updatedReceived = state.receivedRequests.filter((r) => r._id !== requestId);
+      const friendExists = state.friends.some((f) => f._id === friend._id);
+      const updatedFriends = friendExists ? state.friends : [friend, ...state.friends];
+      return {
+        sentRequests: updatedSent,
+        receivedRequests: updatedReceived,
+        friends: updatedFriends,
+      };
+    });
+  },
+
+  handleRequestDeleted: ({ requestId }) => {
+    set((state) => ({
+      sentRequests: state.sentRequests.filter((r) => r._id !== requestId),
+      receivedRequests: state.receivedRequests.filter((r) => r._id !== requestId),
+    }));
+  },
 }));

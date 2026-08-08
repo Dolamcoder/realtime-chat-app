@@ -34,7 +34,6 @@ const CreateNewChat = () => {
       const res = await api.post("/conversations", { memberIds: [friendId] });
       const convo = res.data.conversation;
       
-      // Update local state directly so there is no delay
       useChatStore.setState((state) => {
         const exists = state.conversations.some((c) => c._id === convo._id);
         if (exists) return state;
@@ -48,7 +47,6 @@ const CreateNewChat = () => {
         setOpenMobile(false);
       }
       
-      // Sync list in background
       fetchConversations();
     } catch (err) {
       console.error(err);
@@ -90,7 +88,6 @@ const CreateNewChat = () => {
             </DialogTitle>
           </DialogHeader>
 
-          {/* Search Input */}
           <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/80" />
             <input
@@ -98,12 +95,11 @@ const CreateNewChat = () => {
               placeholder="Tìm bạn bè..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.stopPropagation()} // Stop propagation to prevent global hotkey routing when typing
+              onKeyDown={(e) => e.stopPropagation()}
               className="w-full pl-9 pr-4 py-2 text-sm bg-muted/65 hover:bg-muted/95 focus:bg-background border border-border/40 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 rounded-xl transition-all duration-200 outline-none text-foreground"
             />
           </div>
 
-          {/* Friends list */}
           <div className="mt-4 max-h-[300px] overflow-y-auto space-y-2 beautiful-scrollbar">
             {filteredFriends.length === 0 ? (
               <p className="text-sm text-muted-foreground py-6 text-center">

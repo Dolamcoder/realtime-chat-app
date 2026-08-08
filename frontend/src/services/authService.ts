@@ -25,12 +25,10 @@ export const authService = {
   },
   fetchMe: async () => {
     const res = await api.get("/users/me");
-    console.log("check mee<<<<<", res.data.user);
     return res.data.user;
   },
   refresh:async()=>{
     const res=await api.post("/auth/refresh");
-    console.log(res);
     return res.data.accessToken;
   },
   updateProfile: async (displayName: string, bio: string, phone: string) => {

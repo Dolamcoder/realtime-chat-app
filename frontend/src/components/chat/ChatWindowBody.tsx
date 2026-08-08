@@ -7,7 +7,6 @@ const ChatWindowBody = () => {
     messages: allMessages,
     conversations,
   } = useChatStore();
-  console.log("<<< check message", allMessages);
   const messages = allMessages[activeConversationId!]?.items || [];
   const selectedConvo = conversations.find(
     (c) => c._id === activeConversationId,
@@ -27,7 +26,6 @@ const ChatWindowBody = () => {
       </div>
     );
   }
-  console.log("<<<<<check", messages);
   return (
     <div className="p-4 pb-3 bg-primary-foreground h-full flex flex-col overflow-hidden">
       <div className="flex-1 flex flex-col-reverse overflow-y-auto overflow-x-hidden no-scrollbar">

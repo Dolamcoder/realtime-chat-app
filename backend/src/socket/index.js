@@ -12,13 +12,11 @@ const io = new Server(server, {
     }
 })
 io.use(socketAuthMiddleware);
-// Map<userId, Set<socketId>> — hỗ trợ nhiều thiết bị cùng lúc
 const onlineUsers = new Map();
 io.on("connection", async (socket) => {
     const user = socket.user;
     const userId = user._id.toString();
 
-    // Thêm socketId vào Set của user (tạo mới nếu chưa có)
     if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
     }
@@ -31,7 +29,6 @@ io.on("connection", async (socket) => {
         socket.join(id)
     })
 
-    // Helper: lấy 1 socketId bất kỳ của 1 userId (dùng cho call)
     const getAnySocket = (targetUserId) => {
         const sockets = onlineUsers.get(targetUserId?.toString());
         if (!sockets || sockets.size === 0) return null;
@@ -98,7 +95,6 @@ io.on("connection", async (socket) => {
         }
     });
 
-    // Cho phép client join vào room của conversation mới được tạo
     socket.on("join-conversation", ({ conversationId }) => {
         if (conversationId) {
             socket.join(conversationId);
@@ -110,7 +106,6 @@ io.on("connection", async (socket) => {
         const sockets = onlineUsers.get(userId);
         if (sockets) {
             sockets.delete(socket.id);
-            // Chỉ xóa user khỏi online list khi KHÔNG còn thiết bị nào
             if (sockets.size === 0) {
                 onlineUsers.delete(userId);
             }

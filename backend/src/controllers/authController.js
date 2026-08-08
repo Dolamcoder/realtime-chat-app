@@ -2,6 +2,7 @@ import { checkUsername, checkEmail, hashPassword, checkPassword, createAccessTok
 import { createUser, getUserByUsername } from '../services/userService.js'
 import { asyncHandler } from '../utils/asyncHandle.js';
 import { saveRefreshToken, createRefreshToken, deleteRefreshToken, verifyRefreshToken } from '../services/sessionService.js';
+import ApiError from '../utils/ApiError.js';
 
 export const register = asyncHandler(async (req, res) => {
   const { username, email, password, firstname, lastname } = req.body;
@@ -16,8 +17,6 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 const getCookieOptions = (req) => {
-  // Production: luôn HTTPS → secure + sameSite=none (cross-origin giữa fe và be)
-  // Development: check origin để hỗ trợ ngrok HTTPS trong khi vẫn dev local
   const isProduction = process.env.NODE_ENV === 'production';
   const origin = req.headers.origin || '';
   const isHttpsOrigin = origin.startsWith('https://');
@@ -30,6 +29,7 @@ const getCookieOptions = (req) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 };
+
 
 export const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
@@ -57,6 +57,9 @@ export const logOut = asyncHandler(async (req, res) => {
 export const refreshToken = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
   console.log("check cookie", token);
+  if (!token) {
+    throw new ApiError(401, "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn");
+  }
   const userId = await verifyRefreshToken(token);
   console.log("vdadsd", userId);
   const accessToken = createAccessToken(userId);

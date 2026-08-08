@@ -6,6 +6,11 @@ import { FriendRequest } from "../models/FriendRequest.js";
 import { Notification } from "../models/Notification.js";
 import { emitToUser } from "../socket/index.js";
 import {
+  emitFriendRequestReceived,
+  emitFriendRequestAccepted,
+  emitFriendRequestDeleted,
+} from "../socket/friendSocket.js";
+import {
   checkRelation,
   createFriend,
   getAllFriendShips,
@@ -53,6 +58,16 @@ export const sendFriendRequest = asyncHandler(async (req, res) => {
     console.error("Lỗi khi tạo thông báo gửi lời mời kết bạn", e);
   }
 
+  try {
+    const populatedRequest = await FriendRequest.findById(request._id)
+      .populate("from", "_id username displayName avatarUrl")
+      .populate("to", "_id username displayName avatarUrl")
+      .lean();
+    emitFriendRequestReceived(to.toString(), populatedRequest);
+  } catch (e) {
+    console.error("Lỗi khi phát socket friend-request-received", e);
+  }
+
   return res.status(200).json({
     message: "Gửi lời mời kết bạn thành công",
     request,
@@ -62,9 +77,7 @@ export const sendFriendRequest = asyncHandler(async (req, res) => {
 export const acceptFriendRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
   const userId = req.user._id;
-  console.log("userId", userId.toString());
   const request = await getRequestById(requestId);
-  console.log("to", request.to.toString());
   if (userId.toString() !== request.to.toString()) {
     return res.status(403).json({
       message: "Bạn không có quyền chấp nhận yêu cầu này",
@@ -74,7 +87,9 @@ export const acceptFriendRequest = asyncHandler(async (req, res) => {
   await deleteRequest(requestId);
 
   try {
-    const accepterObj = await User.findById(userId).select("displayName avatarUrl").lean();
+    const accepterObj = await User.findById(userId).select("_id username displayName avatarUrl").lean();
+    const senderObj = await User.findById(request.from).select("_id username displayName avatarUrl").lean();
+
     const notification = await Notification.create({
       recipient: request.from,
       sender: userId,
@@ -85,6 +100,15 @@ export const acceptFriendRequest = asyncHandler(async (req, res) => {
     emitToUser(request.from, "new-notification", {
       ...notification,
       sender: accepterObj
+    });
+
+    emitFriendRequestAccepted(request.from.toString(), {
+      requestId,
+      friend: accepterObj,
+    });
+    emitFriendRequestAccepted(userId.toString(), {
+      requestId,
+      friend: senderObj,
     });
   } catch (e) {
     console.error("Lỗi khi tạo thông báo đồng ý kết bạn", e);
@@ -99,6 +123,14 @@ export const deleteFriendRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
   const request = await getRequestById(requestId);
   await deleteRequest(requestId);
+
+  try {
+    emitFriendRequestDeleted(request.from.toString(), { requestId });
+    emitFriendRequestDeleted(request.to.toString(), { requestId });
+  } catch (e) {
+    console.error("Lỗi khi phát socket deleteFriendRequest", e);
+  }
+
   return res.sendStatus(204);
 });
 
