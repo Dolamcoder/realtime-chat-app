@@ -1,11 +1,10 @@
 import express from "express";
 import {
-  sendDirectMessage,
-  sendGroupMessage,
+  sendMessage,
   recallMessage,
   searchMessages,
-} from "../../controllers/nessageController.js";
-import { checkFriendship, checkGroupMembership } from "../../middlewares/friendMiddleware.js";
+} from "../../controllers/messageController.js";
+import { checkGroupMembership } from "../../middlewares/friendMiddleware.js";
 import { upload } from "../../middlewares/uploadMiddleware.js";
 import { validate } from "../../middlewares/validationMiddleware.js";
 import { messageValidation } from "../../validations/messageValidation.js";
@@ -18,8 +17,7 @@ const uploadFields = upload.fields([
   { name: "voice", maxCount: 1 },
 ]);
 
-router.post("/direct", uploadFields, validate(messageValidation.sendDirectMessage), checkGroupMembership, sendDirectMessage);
-router.post("/group", uploadFields, validate(messageValidation.sendGroupMessage), checkGroupMembership, sendGroupMessage);
+router.post("/", uploadFields, validate(messageValidation.sendMessage), checkGroupMembership, sendMessage);
 router.patch("/:messageId/recall", recallMessage);
 router.get("/conversations/:conversationId/search", searchMessages);
 

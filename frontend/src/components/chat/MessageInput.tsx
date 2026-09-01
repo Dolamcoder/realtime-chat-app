@@ -31,7 +31,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
   }, [previewUrls]);
 
   if (!user) return;
-  const { sendDirectMessage, sendGroupMessage } = useChatStore();
+  const { sendMessage } = useChatStore();
   const isRemoved = selectedConvo.removedUsers?.includes(user._id);
 
   const handleKeyDown = async (
@@ -138,12 +138,7 @@ const MessageInput = ({ selectedConvo }: { selectedConvo: Conversation }) => {
     setVoiceBlob(null);
     setRecordingDuration(0);
 
-    if (selectedConvo.type === "direct") {
-      await sendDirectMessage(selectedConvo._id, messageContent, imagesToSend, fileToSend, voiceFile, durationToSend);
-    }
-    else {
-      await sendGroupMessage(selectedConvo._id, messageContent, imagesToSend, fileToSend, voiceFile, durationToSend);
-    }
+    await sendMessage(selectedConvo._id, messageContent, imagesToSend, fileToSend, voiceFile, durationToSend);
   };
 
   return (

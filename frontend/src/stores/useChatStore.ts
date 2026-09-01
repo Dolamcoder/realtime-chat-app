@@ -75,7 +75,7 @@ export const useChatStore = create<ChatState>()(
           set({ messageLoading: false });
         }
       },
-      sendDirectMessage: async (conversationId, content, images = [], file = null, voice = null, voiceDuration = null) => {
+      sendMessage: async (conversationId, content, images = [], file = null, voice = null, voiceDuration = null) => {
         const { activeConversationId } = get();
         const { user } = useAuthStore.getState();
         if (!user) return;
@@ -102,7 +102,7 @@ export const useChatStore = create<ChatState>()(
         await get().addMessage(tempMsg);
 
         try {
-          const newMsg = await chatService.sendDirectMessage(
+          const newMsg = await chatService.sendMessage(
             conversationId,
             content,
             images,
@@ -137,92 +137,6 @@ export const useChatStore = create<ChatState>()(
                       lastMessage: {
                         _id: newMsg._id,
                         content: newMsg.content || (newMsg.imgUrls?.length ? "[Hình ảnh]" : newMsg.fileUrl ? "[Tệp tin]" : newMsg.voiceUrl ? "[Tin nhắn thoại]" : ""),
-                        createdAt: newMsg.createdAt,
-                        sender: {
-                          _id: newMsg.senderId,
-                          displayName: "",
-                          avatarUrl: null,
-                        },
-                      },
-                      lastMessageAt: newMsg.createdAt,
-                    }
-                  : c,
-              ),
-            }));
-          }
-        } catch (err) {
-          console.error(err);
-          // Nếu lỗi, đánh dấu gửi thất bại
-          set((state) => {
-            const convoMessages = state.messages[conversationId]?.items ?? [];
-            const updatedItems = convoMessages.map((m) => m._id === tempId ? { ...m, status: "error" as const } : m);
-            return {
-              messages: {
-                ...state.messages,
-                [conversationId]: {
-                  ...state.messages[conversationId],
-                  items: updatedItems
-                }
-              }
-            };
-          });
-        }
-      },
-      sendGroupMessage: async (conversationId, content, images = [], file = null, voice = null, voiceDuration = null) => {
-        const { activeConversationId } = get();
-        const { user } = useAuthStore.getState();
-        if (!user) return;
-
-        // 1. Tạo tin nhắn tạm thời để hiển thị ngay lập tức (Optimistic Update)
-        const tempId = `temp-${Date.now()}`;
-        const tempMsg = {
-          _id: tempId,
-          conversationId,
-          senderId: user._id,
-          content,
-          imgUrls: images.map(img => URL.createObjectURL(img)),
-          fileUrl: file ? URL.createObjectURL(file) : null,
-          fileName: file?.name || null,
-          fileType: file?.type || null,
-          voiceUrl: voice ? URL.createObjectURL(voice) : null,
-          voiceDuration,
-          createdAt: new Date().toISOString(),
-          isOwn: true,
-          status: "sending" as const
-        };
-
-        // Đẩy tin nhắn tạm vào UI ngay lập tức
-        await get().addMessage(tempMsg);
-
-        try {
-          const newMsg = await chatService.sendGroupMessage(content, conversationId, images, file, voice, voiceDuration);
-
-          if (newMsg) {
-            // Thay thế tin nhắn tạm bằng tin nhắn thật từ server trả về
-            set((state) => {
-              const convoMessages = state.messages[conversationId]?.items ?? [];
-              const updatedItems = convoMessages.map((m) => m._id === tempId ? { ...newMsg, tempId, isOwn: true, status: "success" as const } : m);
-              return {
-                messages: {
-                  ...state.messages,
-                  [conversationId]: {
-                    ...state.messages[conversationId],
-                    items: updatedItems
-                  }
-                }
-              };
-            });
-
-            // Cập nhật cuộc trò chuyện trong sidebar
-            set((state) => ({
-              conversations: state.conversations.map((c) =>
-                c._id === activeConversationId
-                  ? {
-                      ...c,
-                      seenBy: [],
-                      lastMessage: {
-                        _id: newMsg._id,
-                        content: newMsg.content || (newMsg.imgUrls?.length ? "[Hình ảnh]" : newMsg.fileUrl ? "[Tệp tin]" : ""),
                         createdAt: newMsg.createdAt,
                         sender: {
                           _id: newMsg.senderId,

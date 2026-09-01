@@ -1,3 +1,32 @@
+import { uploadToStorage, uploadMultipleToStorage } from "../services/storageService.js";
+
+export const processMessageFiles = async (files) => {
+    const imgUrls = [];
+    let fileUrl = null;
+    let fileName = null;
+    let fileType = null;
+    let voiceUrl = null;
+
+    if (files) {
+        if (files.images && files.images.length > 0) {
+            const paths = await uploadMultipleToStorage(files.images);
+            imgUrls.push(...paths);
+        }
+        if (files.file && files.file.length > 0) {
+            const uploadedFile = files.file[0];
+            fileUrl = await uploadToStorage(uploadedFile);
+            fileName = uploadedFile.originalname;
+            fileType = uploadedFile.mimetype;
+        }
+        if (files.voice && files.voice.length > 0) {
+            const uploadedVoice = files.voice[0];
+            voiceUrl = await uploadToStorage(uploadedVoice);
+        }
+    }
+
+    return { imgUrls, fileUrl, fileName, fileType, voiceUrl };
+};
+
 export const updateConversationAfterCreateMessage = (conversation, message, senderId) => {
     let previewContent = message.content;
 

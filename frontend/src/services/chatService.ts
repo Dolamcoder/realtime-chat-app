@@ -1,5 +1,6 @@
 import api from "@/lib/axios";
 import type { ConversationResponse, MessageResponse } from "@/types/chat";
+
 export const chatService = {
   async fetchConversations(): Promise<ConversationResponse> {
     const res = await api.get("/conversations");
@@ -14,7 +15,7 @@ export const chatService = {
     );
     return { messages: res.data.messages, cursor: res.data.nextCursor };
   },
-  async sendDirectMessage(
+  async sendMessage(
     conversationId: string,
     content: string = "",
     images: File[] = [],
@@ -39,39 +40,7 @@ export const chatService = {
     if (voiceDuration !== null) {
       formData.append("voiceDuration", String(voiceDuration));
     }
-    const res = await api.post("/messages/direct", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return res.data.message;
-  },
-  async sendGroupMessage(
-    content: string = "",
-    conversationId: string,
-    images: File[] = [],
-    file: File | null = null,
-    voice: File | null = null,
-    voiceDuration: number | null = null
-  ) {
-    const formData = new FormData();
-    formData.append("conversationId", conversationId);
-    formData.append("content", content);
-    if (images && images.length > 0) {
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
-    }
-    if (file) {
-      formData.append("file", file);
-    }
-    if (voice) {
-      formData.append("voice", voice);
-    }
-    if (voiceDuration !== null) {
-      formData.append("voiceDuration", String(voiceDuration));
-    }
-    const res = await api.post("/messages/group", formData, {
+    const res = await api.post("/messages", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
